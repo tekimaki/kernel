@@ -746,6 +746,15 @@ class BitSystem extends BitBase {
 	function confirmDialog( $pFormHash, $pMsg ) {
 		global $gBitSmarty;
 		if( !empty( $pMsg ) ) {
+			// automatically preserve pagination
+			if( !empty( $_REQUEST['find'] ) )
+				$pFormHash['find'] = $_REQUEST['find'];
+			if( !empty( $_REQUEST['sort_mode'] ) )
+				$pFormHash['sort_mode'] = $_REQUEST['sort_mode'];
+			if( !empty( $_REQUEST['list_page'] ) )
+				$pFormHash['list_page'] = $_REQUEST['list_page'];
+			if( !empty( $_REQUEST['offset'] ) )
+				$pFormHash['offset'] = $_REQUEST['offset'];
 			// cancel
 			if( empty( $pParamHash['cancel_url'] ) ) {
 				$gBitSmarty->assign( 'backJavascript', 'onclick="history.back();"' );
