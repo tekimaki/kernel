@@ -94,6 +94,7 @@ class BitBase {
 			$this->setDatabase($gBitDb);
 		}
 		$this->mErrors = array();
+		$this->mSuccess = array();
 		$this->mInfo = array();
 	}
 
@@ -390,6 +391,22 @@ class BitBase {
 				$pListHash['listInfo']['block']['next'][$pListHash['listInfo']['total_pages']] = $pListHash['listInfo']['total_pages'];
 			}
 		}
+	}
+
+	function getErrors(){
+		return $this->mErrors;
+	}
+
+	function getSuccess(){
+		return $this->mSuccess;
+	}
+
+	function setError( $pErrorKey, $pValue ){
+		$this->mErrors[$pErrorKey] = $pValue;
+	}
+
+	function setSuccess( $pSuccessKey, $pValue ){
+		$this->mSuccess[$pSuccessKey] = $pValue;
 	}
 
 }
