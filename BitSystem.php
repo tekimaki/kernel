@@ -733,7 +733,7 @@ class BitSystem extends BitBase {
 // bit_log_error( "PERMISSION DENIED: $pPermission $pMsg" ); 
 		$gBitSmarty->assign( 'msg', tra( $pMsg ) );
 		$this->display( "error.tpl" );
-die;
+		die;
 	}
 
 	/**
@@ -746,13 +746,16 @@ die;
 	function confirmDialog( $pFormHash, $pMsg ) {
 		global $gBitSmarty;
 		if( !empty( $pMsg ) ) {
+			// cancel
 			if( empty( $pParamHash['cancel_url'] ) ) {
 				$gBitSmarty->assign( 'backJavascript', 'onclick="history.back();"' );
 			}
+			// reserved hash param 'input' injects custom input html
 			if( !empty( $pFormHash['input'] ) ) {
 				$gBitSmarty->assign( 'inputFields', $pFormHash['input'] );
 				unset( $pFormHash['input'] );
 			}
+			// render and exit
 			$gBitSmarty->assign( 'msgFields', $pMsg );
 			$gBitSmarty->assign_by_ref( 'hiddenFields', $pFormHash );
 			$this->display( 'bitpackage:kernel/confirm.tpl', NULL, array( 'display_mode' => 'edit' ));
@@ -1468,7 +1471,7 @@ die;
 
         /*	this seems to prevent bw from running on servers where sessions work perfectly, 
         	yet /var/lib/php/ is writeable only by php, not by bw (which is better)
-        	it seems to be enough to set temp in config/kernel_config.php for a writable dir
+        	it seems to be enough to set temp in config/config_inc.php for a writable dir
         	if session *actually* don't work - other problem
         	the installer has similar code which is also not used anymore
         	
@@ -1626,7 +1629,7 @@ die;
 	}
 
 	/**
-	 * isLive returns status of the IS_LIVE constant from config/kernel_config.php
+	 * isLive returns status of the IS_LIVE constant from config/config_inc.php
 	 * 
 	 * @access public
 	 * @return TRUE if IS_LIVE is defined and set to a non empty value, else FALSE
