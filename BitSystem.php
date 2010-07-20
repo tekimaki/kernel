@@ -755,6 +755,8 @@ class BitSystem extends BitBase {
 				$pFormHash['list_page'] = $_REQUEST['list_page'];
 			if( !empty( $_REQUEST['offset'] ) )
 				$pFormHash['offset'] = $_REQUEST['offset'];
+			if( !empty( $_REQUEST['max_records'] ) )
+				$pFormHash['max_records'] = $_REQUEST['max_records'];
 			// cancel
 			if( empty( $pParamHash['cancel_url'] ) ) {
 				$gBitSmarty->assign( 'backJavascript', 'onclick="history.back();"' );
