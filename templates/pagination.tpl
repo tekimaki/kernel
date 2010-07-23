@@ -67,6 +67,9 @@
 		{if isset($listInfo.find) && $listInfo.find ne ''}
 			&amp;find={$listInfo.find}
 		{/if}
+		{if isset($listInfo.max_records) && $listInfo.max_records ne ''}
+			&amp;max_records={$listInfo.max_records}
+		{/if}
 	{/capture}
 
 	<div class="pagination">
