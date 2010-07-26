@@ -126,7 +126,7 @@ $gBitInstaller->registerUserPermissions( KERNEL_PKG_NAME, array(
 
 // Package requirements
 $gBitInstaller->registerRequirements( KERNEL_PKG_NAME, array(
-	'liberty'   => array( 'min' => '2.1.0' ),
+	'liberty'   => array( 'min' => '2.1.5' ),
 	'users'     => array( 'min' => '2.1.0' ),
 	'themes'    => array( 'min' => '2.0.0' ),
 	'languages' => array( 'min' => '2.0.0' ),
