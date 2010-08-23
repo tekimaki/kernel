@@ -38,11 +38,9 @@ if( !empty( $_REQUEST['features'] ) ) {
 	}
 }
 
-global $gBitInstaller;
-$gBitInstaller = &$gBitSystem;
-$gBitInstaller->verifyInstalledPackages();
-$gBitSmarty->assign( 'requirements', $gBitInstaller->calculateRequirements( TRUE ) );
-$gBitSmarty->assign( 'requirementsMap', $gBitInstaller->drawRequirementsGraph( TRUE, 'cmapx' ));
+$gBitSystem->verifyInstalledPackages();
+$gBitSmarty->assign( 'requirements', $gBitSystem->calculateRequirements( TRUE ) );
+$gBitSmarty->assign( 'requirementsMap', $gBitSystem->drawRequirementsGraph( TRUE, 'cmapx' ));
 
 $upgradable = array();
 foreach( $gBitSystem->mPackages as $name => &$pkg ) {

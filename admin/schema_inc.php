@@ -1,5 +1,25 @@
 <?php
 
+global $gBitSystem;
+
+$gBitSystem->registerPackageInfo( KERNEL_PKG_NAME, array(
+	'description' => "This is the heart of the application. Without this --&gt; nothing.",
+	'license' => '<a href="http://www.gnu.org/licenses/licenses.html#LGPL">LGPL</a>',
+));
+
+// Package requirements
+$gBitSystem->registerRequirements( KERNEL_PKG_NAME, array(
+	'liberty'   => array( 'min' => '2.1.5' ),
+	'users'     => array( 'min' => '2.1.0' ),
+	'themes'    => array( 'min' => '2.0.0' ),
+	'languages' => array( 'min' => '2.0.0' ),
+));
+
+
+// Install process
+global $gBitInstaller;
+if( is_object( $gBitInstaller ) ){
+
 $tables = array(
 
 'adodb_logsql' => "
@@ -32,16 +52,9 @@ $tables = array(
 
 );
 
-global $gBitInstaller;
-
 foreach( array_keys( $tables ) AS $tableName ) {
 	$gBitInstaller->registerSchemaTable( KERNEL_PKG_NAME, $tableName, $tables[$tableName], TRUE );
 }
-
-$gBitInstaller->registerPackageInfo( KERNEL_PKG_NAME, array(
-	'description' => "This is the heart of the application. Without this --&gt; nothing.",
-	'license' => '<a href="http://www.gnu.org/licenses/licenses.html#LGPL">LGPL</a>',
-));
 
 // Default Preferences
 $gBitInstaller->registerPreferences( KERNEL_PKG_NAME, array(
@@ -124,12 +137,4 @@ $gBitInstaller->registerUserPermissions( KERNEL_PKG_NAME, array(
 	array( 'p_access_closed_site' , 'Can access site when closed'                                                , 'admin' , KERNEL_PKG_NAME )
 ));
 
-// Package requirements
-$gBitInstaller->registerRequirements( KERNEL_PKG_NAME, array(
-	'liberty'   => array( 'min' => '2.1.5' ),
-	'users'     => array( 'min' => '2.1.0' ),
-	'themes'    => array( 'min' => '2.0.0' ),
-	'languages' => array( 'min' => '2.0.0' ),
-));
-
-?>
+}
