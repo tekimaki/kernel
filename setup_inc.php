@@ -121,7 +121,7 @@ if( $gBitSystem->isDatabaseValid() ) {
 		$gBitSystem->getConfig( 'site_keywords_3' )
 	);
 
-	$host = $gBitSystem->getConfig( 'kernel_server_name', $_SERVER['HTTP_HOST'] );
+	$host = $gBitSystem->getConfig( 'kernel_server_name', empty($_SERVER['HTTP_HOST']) ? 'localhost' : $_SERVER['HTTP_HOST'] );
 	if( !defined('BIT_BASE_URI' ) ) {
 		// Added check for IIS $_SERVER['HTTPS'] uses 'off' value - wolff_borg
 		define( 'BIT_BASE_URI', 'http'.(( !empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] != 'off' ) ? 's' : '' ).'://'.$host );

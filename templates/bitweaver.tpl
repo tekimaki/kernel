@@ -26,7 +26,10 @@
 
 		<div id="wrapper">
 			<div id="content">
-				{include file="bitpackage:libertystructure/display_structure.tpl"}
+				{* TODO: This should probably be in a nav registration in libertystructure instead. *}
+				{if $gBitSystem->isPackageActive('libertystructure')}
+					{include file="bitpackage:libertystructure/display_structure.tpl"}
+				{/if}
 				{if $pageError}<div class="error">{$pageError}</div>{/if}
 				{include file=$mid}
 			</div><!-- end #content -->{* needed by output filters. *}
