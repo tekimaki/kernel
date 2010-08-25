@@ -1791,7 +1791,10 @@ class BitSystem extends BitBase {
 	 */
 	function registerSchemaSequences( $pPackage, $pSeqHash ) {
 		$pPackage = strtolower( $pPackage ); // lower case for uniformity
-		$this->mPackages[$pPackage]['sequences'] = $pSeqHash;
+		if( empty( $this->mPackages[$pPackage]['sequences'] ) ){
+			$this->mPackages[$pPackage]['sequences'] = array();
+		}
+		$this->mPackages[$pPackage]['sequences'] = array_merge( $this->mPackages[$pPackage]['sequences'], $pSeqHash );
 	}
 
 	/**
@@ -1804,7 +1807,10 @@ class BitSystem extends BitBase {
 	 */
 	function registerSchemaIndexes( $pPackage, $pIndexHash ) {
 		$pPackage = strtolower( $pPackage ); // lower case for uniformity
-		$this->mPackages[$pPackage]['indexes'] = $pIndexHash;
+		if( empty( $this->mPackages[$pPackage]['indexes'] ) ){
+			$this->mPackages[$pPackage]['indexes'] = array();
+		}
+		$this->mPackages[$pPackage]['indexes'] = array_merge( $this->mPackages[$pPackage]['indexes'], $pIndexHash );
 	}
 
 	/**
