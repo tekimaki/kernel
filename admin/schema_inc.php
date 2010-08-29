@@ -59,7 +59,6 @@ foreach( array_keys( $tables ) AS $tableName ) {
 // Default Preferences
 $gBitInstaller->registerPreferences( KERNEL_PKG_NAME, array(
 	array( KERNEL_PKG_NAME, 'site_online_help'            , 'y' ),
-	array( KERNEL_PKG_NAME, 'site_edit_help'              , 'y' ),
 	array( KERNEL_PKG_NAME, 'site_form_help'              , 'y' ),
 	array( KERNEL_PKG_NAME, 'site_short_date_format'      , '%d %b %Y' ),
 	array( KERNEL_PKG_NAME, 'site_short_time_format'      , '%H:%M %Z' ),
@@ -100,25 +99,25 @@ $moduleHash = array(
 	array(
 		'title' => NULL,
 		'pos' => 5,
-		'layout_area' => 'l',
+		'layout_area' => 'r',
 		'module_rsrc' => 'bitpackage:kernel/mod_package_menu.tpl',
 	),
 	array(
 		'title' => 'bitweaver',
-		'pos' => 5,
+		'pos' => 10,
 		'layout_area' => 'r',
 		'module_rsrc' => 'bitpackage:kernel/mod_bitweaver_info.tpl',
 	),
 	array(
 		'title' => 'Server Statistics',
 		'groups' => array( 'Admin' ),
-		'pos' => 10,
+		'pos' => 15,
 		'layout_area' => 'r',
 		'module_rsrc' => 'bitpackage:kernel/mod_server_stats.tpl',
 	),
 	array(
 		'title' => 'Powered by',
-		'pos' => 15,
+		'pos' => 20,
 		'layout_area' => 'r',
 		'module_rsrc' => 'bitpackage:kernel/mod_powered_by.tpl',
 	),

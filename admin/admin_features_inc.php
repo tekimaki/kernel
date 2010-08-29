@@ -16,10 +16,6 @@ $formBit = array(
 $gBitSmarty->assign( 'formBit',$formBit );
 
 $formHelp = array(
-	'site_edit_help' => array(
-		'label' => 'Input Help',
-		'note' => 'Displays <strong>extensive</strong> (about 50kb) help regarding the syntax of available format plugins (e.g., Tikiwiki and HTML), and of available Data Plugins (e.g., attachment, include, table of contents). Explanations and examples are shown near any suitable entry form.',
-	),
 	'site_form_help' => array(
 		'label' => 'Help Notes',
 		'note' => 'Show inline help notes in forms such as the one you are reading now.',
