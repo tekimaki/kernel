@@ -13,13 +13,18 @@
  */
 function simple_set_configs( $pArray, $pPackageName = NULL ){
     foreach( $pArray as $item => $data ) {
-        if( $data['type'] == 'numeric' ) {
+		switch( $data['type'] ){
+		case 'numeric':
             simple_set_int( $item, $pPackageName );
-        } elseif( $data['type'] == 'toggle' ) {
+			break;
+		case 'toggle':
             simple_set_toggle( $item, $pPackageName );
-        } elseif( $data['type'] == 'input' ) {
+			break;
+		case 'input':
+		case 'hexcolor':
             simple_set_value( $item, $pPackageName );
-        }
+			break;
+		}
     }
 }
 
