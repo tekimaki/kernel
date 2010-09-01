@@ -26,12 +26,14 @@
 
 		<div id="wrapper">
 			<div id="content">
-				{* TODO: This should probably be in a nav registration in libertystructure instead. *}
-				{if $gBitSystem->isPackageActive('libertystructure')}
-					{include file="bitpackage:libertystructure/display_structure.tpl"}
-				{/if}
-				{if $pageError}<div class="error">{$pageError}</div>{/if}
-				{include file=$mid}
+				<div id="main">
+					{* TODO: This should probably be in a nav registration in libertystructure instead. *}
+					{if $gBitSystem->isPackageActive('libertystructure')}
+						{include file="bitpackage:libertystructure/display_structure.tpl"}
+					{/if}
+					{if $pageError}<div class="error">{$pageError}</div>{/if}
+					{include file=$mid}
+				</div><!-- end #main -->
 			</div><!-- end #content -->{* needed by output filters. *}
 		</div><!-- end #wrapper -->
 
