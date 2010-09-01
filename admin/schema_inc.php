@@ -9,8 +9,8 @@ $gBitSystem->registerPackageInfo( KERNEL_PKG_NAME, array(
 
 // Package requirements
 $gBitSystem->registerRequirements( KERNEL_PKG_NAME, array(
-	'liberty'   => array( 'min' => '2.1.5' ),
-	'users'     => array( 'min' => '2.1.0' ),
+	'liberty'   => array( 'min' => '2.1.6' ),
+	'users'     => array( 'min' => '2.1.3' ),
 	'themes'    => array( 'min' => '2.0.0' ),
 	'languages' => array( 'min' => '2.0.0' ),
 ));

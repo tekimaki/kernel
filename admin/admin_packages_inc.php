@@ -45,6 +45,7 @@ $gBitSmarty->assign( 'requirementsMap', $gBitSystem->drawRequirementsGraph( TRUE
 $upgradable = array();
 foreach( $gBitSystem->mPackages as $name => &$pkg ) {
 	if( $gBitSystem->isPackageInstalled( $name ) && !empty( $pkg['info']['upgrade'] )) {
+		/* god damn it right here, deprecate checking tables - force installed for all upgrades
 		// If no tables then just do a quiet 'auto-upgrade' of version number
 		if( !isset( $pkg['tables'] ) || empty( $pkg['tables'] ) ) {
 			$gBitSystem->storeVersion( $name, $pkg['info']['upgrade'] );
@@ -52,10 +53,13 @@ foreach( $gBitSystem->mPackages as $name => &$pkg ) {
 			$pkg['info']['version'] = $pkg['info']['upgrade'];
 			unset( $pkg['info']['upgrade'] );
 		} else { // add to a list of displayed packages that need upgrading
+		*/
 			// only display relevant information to keep things tight.
 			$upgradable[$name]['info']['version'] = $pkg['info']['version'];
 			$upgradable[$name]['info']['upgrade'] = $pkg['info']['upgrade'];
+		/*
 		}
+		*/
 	}
 }
 $gBitSmarty->assign( 'upgradable', $upgradable );
