@@ -146,6 +146,7 @@ define( 'KERNEL_PKG_DIR',     'kernel' );
 define( 'KERNEL_PKG_NAME',    'kernel' );
 define( 'KERNEL_PKG_PATH',    BIT_ROOT_PATH.'kernel/' );
 define( 'CONFIG_PKG_PATH',    BIT_ROOT_PATH.'config/' );
+define( 'EXTERNALS_PKG_PATH', BIT_ROOT_PATH.'externals/' );
 define( 'LANGUAGES_PKG_PATH', BIT_ROOT_PATH.'languages/' );
 define( 'LIBERTY_PKG_DIR',    'liberty' );
 define( 'LIBERTY_PKG_NAME',   'liberty' );
