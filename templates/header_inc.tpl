@@ -51,37 +51,4 @@
 	{/if}
 {/if}
 
-<script type="text/javascript">/* <![CDATA[ */
-	BitSystem = {ldelim}
-		"urls":{ldelim}
-		{foreach from=$gBitSystem->mPackages item=pkgInfo key=pkg}
-			{if $gBitSystem->isPackageActive( $pkg )}
-				"{$pkg}":"{$pkgInfo.url}",
-			{/if}
-		{/foreach}
-			"root":"{$smarty.const.BIT_ROOT_URL}",
-			"cookie":"{$smarty.const.BIT_ROOT_URL}",
-			"iconstyle":"{$smarty.const.THEMES_PKG_URL}icon_styles/{$smarty.const.DEFAULT_ICON_STYLE}/"
-		{rdelim}
-	{rdelim};
-	var bitCookiePath = "{$smarty.const.BIT_ROOT_URL}";
-	var bitCookieDomain = "";
-	var bitIconDir = "{$smarty.const.LIBERTY_PKG_URL}icons/";
-	var bitRootUrl = "{$smarty.const.BIT_ROOT_URL}";
-	var bitTk = "{$gBitUser->mTicket}";
-/* ]]> */</script>
-
-{if $gBitThemes->mStyles.joined_javascript}
-	<script type="text/javascript" src="{$gBitThemes->mStyles.joined_javascript}"></script>
-{/if}
-{foreach from=$gBitThemes->mRawFiles.js item=jsFile}
-	<script type="text/javascript" src="{$jsFile}"></script>
-{/foreach}
-
-{if $gBitSystem->isFeatureActive( 'site_use_jscalendar' )}
-	<link rel="stylesheet" title="{$style}" type="text/css" href="{$smarty.const.JSCALENDAR_PKG_URL}calendar-bitweaver.css" media="all" />
-	<script type="text/javascript" src="{$smarty.const.JSCALENDAR_PKG_URL}calendar.js"></script>
-	<script type="text/javascript" src="{$smarty.const.JSCALENDAR_PKG_URL}lang/calendar-en.js"></script>
-	<script type="text/javascript" src="{$smarty.const.JSCALENDAR_PKG_URL}calendar-setup.js"></script>
-{/if}
 {/strip}
