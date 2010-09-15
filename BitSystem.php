@@ -1011,6 +1011,7 @@ class BitSystem extends BitBase {
 	 * @param string $pErrorMsg an error message to write to the server log 
 	 */
 	function securityViolation( $pErrorMsg='', $pDisplayMsg='' ){
+		global $gBitUser, $gBitSystem;
 		$userString = $gBitUser->isRegistered() ? "\nUSER ID: ".$gBitUser->mUserId.' ( '.$gBitUser->getField( 'email' ).' ) ' : '';
 		@error_log( tra( "Security Violation" )."$pErrorMsg $userString ".$_SERVER['REMOTE_ADDR']."\nURI: $_SERVER[REQUEST_URI] \nREFERER: $_SERVER[HTTP_REFERER] " );
 		$gBitSystem->fatalError( tra( "Security Violation" ).(!empty($pDisplayMsg)?': '.$pDisplayMsg:'') );
