@@ -170,7 +170,7 @@ if( empty( $gBitDbHost ) ) {
 // specified in $gPreScan are processed in the traditional order
 global $gPreScan;
 if( empty( $gPreScan ) ) {
-	$gPreScan = array( 'kernel', 'config', 'storage', 'liberty', 'themes', 'users' );
+	$gPreScan = array( 'kernel', 'config', 'storage', 'liberty', 'lcconfig', 'themes', 'switchboard', 'users' );
 }
 
 // here we set the default thumbsizes we use in bitweaver.
