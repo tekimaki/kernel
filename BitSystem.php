@@ -1130,6 +1130,52 @@ class BitSystem extends BitBase {
 		}
 	}
 
+
+	// {{{=========================== Schema Getters ==============================
+	function getPackagesSchemas(){
+		$ret = array();
+
+		// gPreScan may hold a list of packages that must be loaded first
+		global $gPreScan;
+		if( !empty( $gPreScan ) && is_array( $gPreScan )) {
+			foreach( $gPreScan as $pkgDir ) {
+				$loadPkgs[] = $pkgDir;
+			}
+		}
+
+		// load lib configs
+		if( $pkgDir = opendir( BIT_ROOT_PATH )) {
+			while( FALSE !== ( $dirName = readdir( $pkgDir ))) {
+				if( $dirName != '..'  && $dirName != '.' && is_dir( BIT_ROOT_PATH . '/' . $dirName ) && $dirName != 'CVS' && preg_match( '/^\w/', $dirName )) {
+					$loadPkgs[] = $dirName;
+				}
+			}
+		}
+		$loadPkgs = array_unique( $loadPkgs );
+
+		// load the list of pkgs in the right order
+		foreach( $loadPkgs as $loadPkg ) {
+			if( $schema = $this->getPackageSchema( $loadPkg ) ){
+				$ret = array_merge( $ret, $schema );
+			}
+		}
+
+		return $ret;
+	}
+
+	function getPackageSchema( $pPkgDir ){
+		require_once( UTIL_PKG_PATH.'spyc/spyc.php' );
+
+		$scanFile = BIT_ROOT_PATH.$pPkgDir.'/admin/schema.yaml';
+		if( file_exists( $scanFile ) ) {
+			return Spyc::YAMLLoad( $scanFile );
+		}
+
+		return NULL;
+	}
+	/// }}}
+	
+
 	/**
 	 * getDefaultPage 
 	 * 
@@ -2546,4 +2592,3 @@ function bit_system_menu_sort( $a, $b ) {
 }
 
 /* vim: :set fdm=marker : */
-?>
