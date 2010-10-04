@@ -1,0 +1,84 @@
+---
+kernel: 
+  version: 2.0.0
+  required: true
+  requirements: 
+    liberty: 
+      min: 2.1.6
+    users: 
+      min: 2.1.3
+    themes: 
+      min: 2.0.0
+    languages: 
+      min: 2.0.0
+  description: >
+    This is the heart of the application. Without this --&gt; nothing.
+  license: 
+    name: LGPL
+    description: Licensed under the GNU LESSER GENERAL PUBLIC LICENSE.
+    url: http://www.gnu.org/copyleft/lesser.html 
+  homeable: false
+  tables: 
+    adodb_logsql: |
+      
+      created T NOT NULL,
+      sql0 C(250) NOTNULL,
+      sql1 X NOTNULL,
+      params X NOTNULL,
+      tracer X NOTNULL,
+      timer N(16.6) NOTNULL
+      
+    kernel_config: |
+      
+      config_name C(40) PRIMARY,
+      package C(100),
+      config_value C(250)
+      
+    mail_notifications: |
+      
+      event C(200),
+      object C(200),
+      email C(200)
+      
+    sessions: |
+      
+      sesskey C(32) PRIMARY,
+      expiry I NOTNULL,
+      expireref C(64),
+      session_data X not null
+      
+  preferences: 
+    site_online_help: y
+    site_form_help: y
+    site_short_date_format: %d %b %Y
+    site_short_time_format: %H:%M %Z
+    site_upload_dir: storage
+    site_closed_msg: >
+      Site is closed for maintainance; please
+      come back later.
+    site_http_port: 80
+    site_http_prefix: /
+    site_https_port: 443
+    site_https_prefix: /
+    users_count_admin_pageviews: y
+    site_display_utc: UTC
+    site_long_date_format: %A %d of %B, %Y
+    site_long_time_format: %H:%M:%S %Z
+    site_top_column: y
+    site_right_column: y
+    site_left_column: y
+    site_bottom_column: y
+    site_display_reltime: y
+    max_records: 10
+    language: en
+    site_sender_email: 
+    site_url_index: 
+  permissions: 
+    p_admin: 
+      description: >
+        Can manage users groups and permissions
+        and all aspects of site management
+      level: admin
+    p_access_closed_site: 
+      description: Can access site when closed
+      level: admin
