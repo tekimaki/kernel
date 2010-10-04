@@ -1,6 +1,6 @@
 ---
 kernel: 
-  version: 2.0.0
+  version: 2.1.0
   required: true
   requirements: 
     liberty: 
@@ -46,6 +46,15 @@ kernel:
       expiry I NOTNULL,
       expireref C(64),
       session_data X not null
+
+    packages: |
+
+      package_guid C(64) PRIMARY,
+      version C(16) NOTNULL DEFAULT '0.0.0',
+      homable C(1) NOTNULL DEFAULT 'y',
+      active C(1) NOTNULL DEFAULT 'n',
+      name C(64),
+      description C(250),
       
   preferences: 
     site_online_help: y
