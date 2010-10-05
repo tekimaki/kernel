@@ -98,6 +98,18 @@ class BitSystem extends BitBase {
 	// Debug HTML to be displayed just after the HTML headers
 	var $mDebugHtml = "";
 
+	/**
+	 * mPackagesSchemas
+	 */
+	var $mPackagesSchemas = array();
+
+	/**
+	 * mPermissionsSchema
+	 * @TODO Deprecate this too - issue is in install pkg where it tries to reconcile permissions issues
+	 */
+	var $mPermissionsSchema = array();
+
+
 	// === BitSystem constructor
 	/**
 	 * base constructor, auto assigns member db variable
@@ -855,6 +867,9 @@ class BitSystem extends BitBase {
 
 		// Define <PACKAGE>_PKG_NAME
 		$pkgDefine = $pkgName.'_PKG_NAME';
+		if( !defined( $pkgDefine )) {
+			define( $pkgDefine, $pkgName );
+		}
 
 		// Define <PACKAGE>_PKG_DIR
 		$package_dir_name = basename( $path );
@@ -1027,6 +1042,7 @@ class BitSystem extends BitBase {
 			}
 		}
 
+		/*
 		if( ( $file_exists || $pPkgDir == 'kernel' ) && !$this->mRegisterCalled ) {
 			$registerHash = array(
 				#for auto registered packages Registration Package Name = Package Directory Name
@@ -1039,6 +1055,7 @@ class BitSystem extends BitBase {
 			}
 			$this->registerPackage( $registerHash );
 		}
+		*/
 	}
 
 	// === scanPackages
@@ -1108,6 +1125,27 @@ class BitSystem extends BitBase {
 
 
 	// {{{=========================== Schema Getters ==============================
+	
+	/**
+	 * loadPackagesSchemas
+	 *
+	 * scans all packages and loads their schema.yaml file
+	 */
+	function loadPackagesSchemas(){
+		$this->mPackagesSchemas = $this->getPackagesSchemas();
+
+		// @TODO Deprecate this too - issue is in install pkg where it tries to reconcile permissions issues
+		foreach( $this->mPackagesSchemas as $package=>$pkgHash ){
+			if( !empty( $pkgHash['permissions'] ) ){
+				foreach( $pkgHash['permissions'] as $perm => &$permHash ){
+					$permHash['package'] = $package;
+					$permHash['name'] = $perm;
+					$this->mPermissionsSchema[$perm] = $permHash;
+				}
+			}
+		}
+	}
+
 	function getPackagesSchemas(){
 		$ret = array();
 
@@ -2421,8 +2459,8 @@ class BitSystem extends BitBase {
 	 */
 	function verifyInstalledPackages( $pSelect='installed' ) {
 		global $gBitDbType;
-		#load in any admin/schema_inc.php files that exist for each package
-		$this->scanPackages( 'admin/schema_inc.php', TRUE, $pSelect );
+		#load in any admin/schema.yaml files that exist for each package
+		$this->loadPackagesSchemas();
 		$ret = array();
 
 		if( $this->isDatabaseValid() ) {
@@ -2441,12 +2479,12 @@ class BitSystem extends BitBase {
 			if( $dbTables = $this->mDb->MetaTables( 'TABLES', FALSE, $showTables ) ) {
 				// make a copy that we can keep track of what tables have been used
 				$unusedTables = $dbTables;
-				foreach( array_keys( $this->mPackages ) as $package ) {
-					// Default to TRUE, &= will FALSE out
-					$this->mPackages[$package]['installed'] = TRUE;
-					if( !empty( $this->mPackages[$package]['tables'] ) ) {
-						$this->mPackages[$package]['db_tables_found'] = TRUE;
-						foreach( array_keys( $this->mPackages[$package]['tables'] ) as $table ) {
+				// make sure packages are loaded - this method is generally used in an install process
+				$this->loadPackagesConfig( TRUE );
+				foreach( $this->mPackagesConfig as $packageData ) {
+					$package = $packageData['guid'];
+					if( !empty( $this->mPackagesSchemas[$package]['tables'] ) ) {
+						foreach( array_keys( $this->mPackagesSchemas[$package]['tables'] ) as $table ) {
 							// painful hardcoded exception for bitcommerce
 							if( $package == 'bitcommerce' ) {
 								$fullTable = $table;
@@ -2469,32 +2507,6 @@ class BitSystem extends BitBase {
 							if(( $key = array_search( $fullTable, $dbTables )) !== FALSE ) {
 								unset( $unusedTables[$key] );
 							}
-
-							$this->mPackages[$package]['installed'] &= $tablePresent;
-							$this->mPackages[$package]['db_tables_found'] &= $tablePresent;
-						}
-					} else {
-						$this->mPackages[$package]['db_tables_found'] = FALSE;
-						if( !$this->getConfig( 'package_'.strtolower( $package ) ) ){
-							$this->mPackages[$package]['installed'] = FALSE;
-						}
-					}
-
-					$this->mPackages[$package]['active_switch'] = $this->getConfig( 'package_'.strtolower( $package ) );
-					if( !empty( $this->mPackages[$package]['required'] ) && $this->mPackages[$package]['active_switch'] != 'y' ) {
-						// we have a disabled required package. turn it back on!
-						$this->storeConfig( 'package_' . $package, 'y', $package );
-						$this->mPackages[$package]['active_switch'] = $this->getConfig( 'package_' . $package );
-					} elseif( !empty( $this->mPackages[$package]['required'] ) && $this->mPackages[$package]['installed'] &&  $this->getConfig( 'package_'.$package ) != 'i' &&  $this->getConfig( 'package_'.$package ) != 'y' ) {
-						$this->storeConfig( 'package_' . $package, 'i', $package );
-					} elseif( !empty( $this->mPackages[$package]['installed'] ) && !$this->isFeatureActive( 'package_'.strtolower( $package ) ) ) {
-						// set package to i if it is installed but not isFeatureActive (common when re-installing packages)
-						$this->storeConfig( 'package_' . $package, 'i', $package );
-						if( $version = $this->getLatestUpgradeVersion( $package ) ) {
-							$this->storeVersion( $package, $version );
-							$this->registerPackageVersion( $package, $version );
-							$this->mPackages[$package]['info']['version'] = $version;
-							unset( $this->mPackages[$package]['info']['upgrade'] );
 						}
 					}
 				}
