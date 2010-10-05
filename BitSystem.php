@@ -1179,6 +1179,10 @@ class BitSystem extends BitBase {
 			$pkgHash[$keys[0]]['guid'] = $keys[0];
 			// assign the path
 			$pkgHash[$keys[0]]['path'] = BIT_ROOT_PATH.$pPkgDir.'/';
+			// assign a name if none set
+			if( empty( $pkgHash[$keys[0]]['name'] ) ){
+				$pkgHash[$keys[0]]['name'] = ucfirst( $keys[0] );
+			}
 			return $pkgHash;
 		}
 
