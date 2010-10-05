@@ -71,9 +71,6 @@ class BitSystem extends BitBase {
 	// The currently active page
 	var $mActivePackage;
 
-	// Modules that need to be inserted during installation
-	var $mInstallModules = array();
-
 	// Javascript to be added to the <body onload> attribute
 	var $mOnload = array();
 
@@ -1002,7 +999,7 @@ class BitSystem extends BitBase {
 
 		if( $pPkgDir == 'kernel' ) {
 			$registerHash = array(
-				#for auto registered packages Registration Package Name = Package Directory Name
+				efor auto registered packages Registration Package Name = Package Directory Name
 				'package_name' => $pPkgDir,
 				'package_path' => BIT_ROOT_PATH.$pPkgDir.'/',
 				'activatable' => FALSE,
