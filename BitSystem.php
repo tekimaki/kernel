@@ -827,43 +827,17 @@ class BitSystem extends BitBase {
 		}
 
 		$this->mRegisterCalled = TRUE;
-		if( empty( $this->mPackages )) {
-			$this->mPackages = array();
+		if( empty( $this->mPackagesConfig )) {
+			$this->loadPackagesConfig();
 		}
 		$pkgName = str_replace( ' ', '_', strtoupper( $name ));
-		$pkgNameKey = strtolower( $pkgName );
-
-		// Some package settings
-		$this->mPackages[$pkgNameKey]['homeable'] = !empty( $pRegisterHash['homeable'] );
-		$this->mPackages[$pkgNameKey]['required'] = !empty( $pRegisterHash['required_package'] );
-		$this->mPackages[$pkgNameKey]['service']  = !empty( $pRegisterHash['service'] ) ? $pRegisterHash['service'] : FALSE;
-		$this->mPackages[$pkgNameKey]['status']   = $this->getConfig( 'package_'.$pkgNameKey, 'n');
-
-		# y = Active
-		# i = Installed
-		# n (or empty/null) = Not Active and Not Installed
-
-		// set package installed and active flag
-		if( $this->mPackages[$pkgNameKey]['status'] == 'a' || $this->mPackages[$pkgNameKey]['status'] == 'y' ) {
-			$this->mPackages[$pkgNameKey]['active_switch'] = TRUE;
-		} else {
-			$this->mPackages[$pkgNameKey]['active_switch'] = FALSE;
-		}
-
-		// set package installed flag (can be installed but not active)
-		if( $this->mPackages[$pkgNameKey]['active_switch'] || $this->mPackages[$pkgNameKey]['status'] == 'i' ) {
-			$this->mPackages[$pkgNameKey]['installed'] = TRUE;
-		} else {
-			$this->mPackages[$pkgNameKey]['installed'] = FALSE;
-		}
+		$packageGuid = $pkgNameKey = strtolower( $pkgName );
 
 		// Define <PACKAGE>_PKG_PATH
 		$pkgDefine = $pkgName.'_PKG_PATH';
 		if( !defined( $pkgDefine )) {
 			define( $pkgDefine, $path );
 		}
-		$this->mPackages[$pkgNameKey]['url']  = BIT_ROOT_URL . basename( $path ) . '/';
-		$this->mPackages[$pkgNameKey]['path']  = BIT_ROOT_PATH . basename( $path ) . '/';
 
 		// Define <PACKAGE>_PKG_URL
 		$pkgDefine = $pkgName.'_PKG_URL';
@@ -881,11 +855,6 @@ class BitSystem extends BitBase {
 
 		// Define <PACKAGE>_PKG_NAME
 		$pkgDefine = $pkgName.'_PKG_NAME';
-		if( !defined( $pkgDefine )) {
-			define( $pkgDefine, $name );
-			$this->mPackages[$pkgNameKey]['activatable']  = isset( $pRegisterHash['activatable'] ) ? $pRegisterHash['activatable'] : TRUE;
-		}
-		$this->mPackages[$pkgNameKey]['name'] = $name;
 
 		// Define <PACKAGE>_PKG_DIR
 		$package_dir_name = basename( $path );
@@ -893,32 +862,41 @@ class BitSystem extends BitBase {
 		if( !defined( $pkgDefine )) {
 			define( $pkgDefine, $package_dir_name );
 		}
-		$this->mPackages[$pkgNameKey]['dir'] = $package_dir_name;
-		$this->mPackagesDirNameXref[$package_dir_name] = $pkgNameKey;
 
 		// Define <PACKAGE>_PKG_TITLE
 		$pkgDefine = $pkgName.'_PKG_TITLE';
 		if( !defined( $pkgDefine )) {
 			define( $pkgDefine, ucfirst( constant( $pkgName.'_PKG_DIR' ) ) );
 		}
-		$this->mPackages[$pkgNameKey]['dir'] = $package_dir_name;
 
-		// Work around for old versions of IIS that do not support $_SERVER['SCRIPT_FILENAME'] - wolff_borg
-		if( !array_key_exists( 'SCRIPT_FILENAME', $_SERVER )) {
-			//remove double-backslashes and return
-			$_SERVER['SCRIPT_FILENAME'] =  str_replace('\\\\', '\\', $_SERVER['PATH_TRANSLATED'] );
-		}
+		if( $this->isPackageInstalled( $packageGuid ) ){
+			// @TODO move this to yaml and registration table
+			$this->mPackagesConfig[$pkgNameKey]['service']  = !empty( $pRegisterHash['service'] ) ? $pRegisterHash['service'] : FALSE;
 
-		// Define the package we are currently in
-		// I tried strpos instead of preg_match here, but it didn't like strings that begin with slash?! - spiderr
-		$scriptDir = ( basename( dirname( $_SERVER['SCRIPT_FILENAME'] ) ) );
-		if( !defined( 'ACTIVE_PACKAGE' ) && ( $scriptDir == constant( $pkgName.'_PKG_DIR' ) || isset( $_SERVER['ACTIVE_PACKAGE'] ) || preg_match( '!/'.$this->mPackages[$pkgNameKey]['dir'].'/!', $_SERVER['PHP_SELF'] ) || preg_match( '!/'.$pkgNameKey.'/!', $_SERVER['PHP_SELF'] ))) {
-			if( isset( $_SERVER['ACTIVE_PACKAGE'] )) {
-				// perhaps the webserver told us the active package (probably because of mod_rewrites)
-				$pkgNameKey = $_SERVER['ACTIVE_PACKAGE'];
+			// pass package settings to installed packages hash
+			$this->mPackagesConfig[$pkgNameKey]['url']  = BIT_ROOT_URL . basename( $path ) . '/';
+			$this->mPackagesConfig[$pkgNameKey]['path']  = BIT_ROOT_PATH . basename( $path ) . '/';
+			$this->mPackagesConfig[$pkgNameKey]['dir'] = $package_dir_name;
+			$this->mPackagesDirNameXref[$package_dir_name] = $pkgNameKey;
+			$this->mPackagesConfig[$pkgNameKey]['dir'] = $package_dir_name;
+
+			// Work around for old versions of IIS that do not support $_SERVER['SCRIPT_FILENAME'] - wolff_borg
+			if( !array_key_exists( 'SCRIPT_FILENAME', $_SERVER )) {
+				//remove double-backslashes and return
+				$_SERVER['SCRIPT_FILENAME'] =  str_replace('\\\\', '\\', $_SERVER['PATH_TRANSLATED'] );
 			}
-			define( 'ACTIVE_PACKAGE', $pkgNameKey );
-			$this->mActivePackage = $pkgNameKey;
+
+			// Define the package we are currently in
+			// I tried strpos instead of preg_match here, but it didn't like strings that begin with slash?! - spiderr
+			$scriptDir = ( basename( dirname( $_SERVER['SCRIPT_FILENAME'] ) ) );
+			if( !defined( 'ACTIVE_PACKAGE' ) && ( $scriptDir == constant( $pkgName.'_PKG_DIR' ) || isset( $_SERVER['ACTIVE_PACKAGE'] ) || preg_match( '!/'.$this->mPackagesConfig[$pkgNameKey]['dir'].'/!', $_SERVER['PHP_SELF'] ) || preg_match( '!/'.$pkgNameKey.'/!', $_SERVER['PHP_SELF'] ))) {
+				if( isset( $_SERVER['ACTIVE_PACKAGE'] )) {
+					// perhaps the webserver told us the active package (probably because of mod_rewrites)
+					$pkgNameKey = $_SERVER['ACTIVE_PACKAGE'];
+				}
+				define( 'ACTIVE_PACKAGE', $pkgNameKey );
+				$this->mActivePackage = $pkgNameKey;
+			}
 		}
 	}
 
@@ -1024,12 +1002,15 @@ class BitSystem extends BitBase {
 	 * @return none
 	 * @access public
 	 */
-	function loadPackage( $pPkgDir, $pScanFile, $pAutoRegister=TRUE, $pOnce=TRUE ) { 
+	function loadPackage( $pPkgDir, $pScanFile, $pOnce=TRUE ) { 
 		#check if already loaded, loading again won't work with 'include_once' since
 		#no register call will be done, so don't auto register.
+		// DEPREACATED Auto Register - delete
+		/*
 		if( $pAutoRegister && !empty( $this->mPackagesDirNameXref[$pPkgDir] ) ) {
 			$pAutoRegister = FALSE;
 		}
+		*/
 
 		$this->mRegisterCalled = FALSE;
 		$scanFile = BIT_ROOT_PATH.$pPkgDir.'/'.$pScanFile;
@@ -1046,7 +1027,7 @@ class BitSystem extends BitBase {
 			}
 		}
 
-		if( ( $file_exists || $pPkgDir == 'kernel' ) && ( $pAutoRegister && !$this->mRegisterCalled ) ) {
+		if( ( $file_exists || $pPkgDir == 'kernel' ) && !$this->mRegisterCalled ) {
 			$registerHash = array(
 				#for auto registered packages Registration Package Name = Package Directory Name
 				'package_name' => $pPkgDir,
@@ -1093,7 +1074,7 @@ class BitSystem extends BitBase {
 	 *    
 	 * @access public
 	 */
-	function scanPackages( $pScanFile = 'bit_setup_inc.php', $pOnce=TRUE, $pSelect='', $pAutoRegister=TRUE ) {
+	function scanPackages( $pScanFile = 'bit_setup_inc.php', $pOnce=TRUE, $pSelect='' ) {
 		global $gPreScan;
 		if( !empty( $gPreScan ) && is_array( $gPreScan )) {
 			// gPreScan may hold a list of packages that must be loaded first
@@ -1112,9 +1093,8 @@ class BitSystem extends BitBase {
 		}
 		$loadPkgs = array_unique( $loadPkgs );
 
-		// load the list of pkgs in the right order
 		foreach( $loadPkgs as $loadPkg ) {
-			$this->loadPackage( $loadPkg, $pScanFile, $pAutoRegister, $pOnce );
+			$this->loadPackage( $loadPkg, $pScanFile, $pOnce );
 		}
 
 		if( !defined( 'BIT_STYLES_PATH' ) && defined( 'THEMES_PKG_PATH' )) {
@@ -2442,7 +2422,7 @@ class BitSystem extends BitBase {
 	function verifyInstalledPackages( $pSelect='installed' ) {
 		global $gBitDbType;
 		#load in any admin/schema_inc.php files that exist for each package
-		$this->scanPackages( 'admin/schema_inc.php', TRUE, $pSelect, FALSE, TRUE );
+		$this->scanPackages( 'admin/schema_inc.php', TRUE, $pSelect );
 		$ret = array();
 
 		if( $this->isDatabaseValid() ) {

@@ -144,7 +144,7 @@ if( $gBitSystem->isDatabaseValid() ) {
 	define( 'LIBERTY_PKG_URL', $root.'liberty/' );
 
 	// load only installed and active packages
-	$gBitSystem->scanPackages( 'bit_setup_inc.php', TRUE, 'active', TRUE, TRUE );
+	$gBitSystem->scanPackages( 'bit_setup_inc.php', TRUE, 'active' );
 
 	// some plugins check for active packages, so we do this *after* package scanning
 	$gBitSmarty->assign_by_ref( "gBitSystem", $gBitSystem );
