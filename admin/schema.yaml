@@ -92,3 +92,29 @@ kernel:
     p_access_closed_site: 
       description: Can access site when closed
       level: admin
+  modules:
+    - pos: 5
+      layout_area: t
+      module_rsrc: bitpackage:kernel/mod_site_title.tpl
+    - pos: 10
+      layout_area: t
+      module_rsrc: bitpackage:kernel/mod_top_menu.tpl
+    - pos: 5
+      layout_area: r
+      module_rsrc: bitpackage:kernel/mod_package_menu.tpl
+    - title: bitweaver
+      pos: 10
+      layout_area: r
+      module_rsrc: bitpackage:kernel/mod_bitweaver_info.tpl
+    - title: Server Statistics
+      groups: Admin
+      pos: 15
+      layout_area: r
+      module_rsrc: bitpackage:kernel/mod_server_stats.tpl
+    - title: Powered by
+      pos: 20
+      layout_area: r
+      module_rsrc: bitpackage:kernel/mod_powered_by.tpl
+    - pos: 5
+      layout_area: b
+      module_rsrc: bitpackage:kernel/mod_bottom_bar.tpl
