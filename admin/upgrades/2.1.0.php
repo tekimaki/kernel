@@ -17,7 +17,7 @@ array( 'DATADICT' => array(
 		'packages' => "
 		  guid C(64) PRIMARY,
 		  version C(16) NOTNULL DEFAULT '0.0.0',
-		  homeable C(1) DEFAULT 'y',
+		  homeable C(1) NOTNULL DEFAULT 'y',
 		  active C(1) DEFAULT NULL,
 		  name C(64),
 		  description C(250)
