@@ -605,8 +605,7 @@ class BitSystem extends BitBase {
 	 * @access public
 	 */
 	function isPackageActive( $pPackageName ) {
-
-		return( $this->getPackageStatus( $pPackageName ) == 'y' );
+		return( $this->getPackageConfigValue( $pPackageName, 'active' ) == 'y' );
 	}
 
 	// === isPackageActiveEarly
@@ -1189,16 +1188,9 @@ class BitSystem extends BitBase {
 		return NULL;
 	}
 
-	function getPackageConfig( $pPackage, $pForce = FALSE ){
-		if( empty( $this->mPackagesConfig[$pPackage] ) || $pForce ){
-			$query = "SELECT * FROM `".BIT_DB_PREFIX."packages` WHERE guid = ?";
-			$result = $this->mDb->query( $query, array( $pPackage ) );
-			if( $row = $result->fetchRow() ){
-				$this->mPackagesConfig[$pPackage] = $row;
-				return $this->mPackagesConfig[$pPackage];
-			}
-		}
-		return NULL;
+	function loadPackagesConfig( $pForce = FALSE ){
+		// pure alias
+		$this->getPackagesConfig( $pForce );
 	}
 
 	function getPackagesConfig( $pForce = FALSE ){
@@ -1212,6 +1204,26 @@ class BitSystem extends BitBase {
 			$this->mPackagesConfig = $rslt;
 		}
 		return $this->mPackagesConfig;
+	}
+
+	function getPackageConfig( $pPackage, $pForce = FALSE ){
+		if( empty( $this->mPackagesConfig[$pPackage] ) || $pForce ){
+			$query = "SELECT * FROM `".BIT_DB_PREFIX."packages` WHERE guid = ?";
+			$result = $this->mDb->query( $query, array( $pPackage ) );
+			if( $row = $result->fetchRow() ){
+				$this->mPackagesConfig[$pPackage] = $row;
+				return $this->mPackagesConfig[$pPackage];
+			}
+		}
+		return NULL;
+	}
+
+	function getPackageConfigValue( $pPackage, $pProperty ){
+		if( empty( $this->mPackagesConfig[$pPackage] ) ){
+			$this->getPackageConfig( $pPackage, TRUE );
+		}
+		$ret = !empty( $this->mPackagesConfig[$pPackage][$pProperty] )?$this->mPackagesConfig[$pPackage][$pProperty]:NULL;
+		return $ret;
 	}
 
 	/// }}}

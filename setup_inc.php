@@ -104,6 +104,7 @@ global $gBitUser, $gTicket, $userlib, $gBitDbType;
 
 if( $gBitSystem->isDatabaseValid() ) {
 	$gBitSystem->loadConfig();
+	$gBitSystem->loadPackagesConfig();
 
 	// output compression
 	if( ini_get( 'zlib.output_compression' ) == 1 ) {
