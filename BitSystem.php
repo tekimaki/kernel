@@ -570,6 +570,7 @@ class BitSystem extends BitBase {
 	 * @access public
 	 */
 	function getPackageStatus( $pPackageName ) {
+		deprecated( 'BitKernel:getPackageStatus is deprecated' );
 
 		// A package is installed if
 		//    $this->getConfig('package_'.$name) == 'i'
@@ -598,14 +599,12 @@ class BitSystem extends BitBase {
 	// === isPackageActive
 	/**
 	 * check's if a package is active.
-	 * @param $pPackageName the name of the package to test
-	 *        where the package name is in the form used to index $mPackages
-	 *        See comments in scanPackages for more information
+	 * @param $pPackageGuid the guid of the package to test
 	 * @return boolean
 	 * @access public
 	 */
-	function isPackageActive( $pPackageName ) {
-		return( $this->getPackageConfigValue( $pPackageName, 'active' ) == 'y' );
+	function isPackageActive( $pPackageGuid ) {
+		return( $this->getPackageConfigValue( $pPackageGuid, 'active' ) == 'y' );
 	}
 
 	// === isPackageActiveEarly
@@ -636,31 +635,25 @@ class BitSystem extends BitBase {
 	// === isPackageInstalled
 	/**
 	 * check's if a package is Installed
-	 * @param $pPackageName the name of the package to test
-	 *        where the package name is in the form used to index $mPackages
-	 *        See comments in scanPackages for more information
+	 * @param $pPackageGuid the guid of the package to test
 	 * @return boolean
 	 * @access public
 	 */
-	function isPackageInstalled( $pPackageName ) {
-
-		$pkgstatus = $this->getPackageStatus( $pPackageName );
-
-		return( ( $pkgstatus == 'y' ) || ( $pkgstatus == 'i' ) );
+	function isPackageInstalled( $pPackageGuid ){
+		return !is_null( $this->getPackageConfig( $pPackageGuid ) );
 	}
+
 
 	// === verifyPackage
 	/**
 	 * It will verify that the given package is active or it will display the error template and die()
-	 * @param $pPackageName the name of the package to test
-	 *        where the package name is in the form used to index $mPackages
-	 *        See comments in scanPackages for more information
+	 * @param $pPackageGuid the name of the package to test
 	 * @return boolean
 	 * @access public
 	 */
-	function verifyPackage( $pPackageName ) {
-		if( !$this->isPackageActive( $pPackageName ) ) {
-			$this->fatalError( tra("This package is disabled").": package_$pPackageName" );
+	function verifyPackage( $pPackageGuid ) {
+		if( !$this->isPackageActive( $pPackageGuid ) ) {
+			$this->fatalError( tra("This package is disabled").": package_$pPackageGuid" );
 		}
 
 		return( TRUE );
@@ -1189,19 +1182,18 @@ class BitSystem extends BitBase {
 	}
 
 	function loadPackagesConfig( $pForce = FALSE ){
-		// pure alias
 		$this->getPackagesConfig( $pForce );
 	}
 
 	function getPackagesConfig( $pForce = FALSE ){
 		if( empty( $this->mPackagesConfig ) || $pForce ){
 			$query = "SELECT * FROM `".BIT_DB_PREFIX."packages`";
-			$result = $this->mDb->query( $query, array(), -1 );
-			$rslt = array();
-			while( $res = $result->fetchRow() ) {
-				$rslt[] = $res;
+			if( $result = $this->mDb->query( $query, array(), -1 ) ){
+				while( $res = $result->fetchRow() ) {
+					$rslt[] = $res;
+				}
+				$this->mPackagesConfig = $rslt;
 			}
-			$this->mPackagesConfig = $rslt;
 		}
 		return $this->mPackagesConfig;
 	}
@@ -1209,10 +1201,11 @@ class BitSystem extends BitBase {
 	function getPackageConfig( $pPackage, $pForce = FALSE ){
 		if( empty( $this->mPackagesConfig[$pPackage] ) || $pForce ){
 			$query = "SELECT * FROM `".BIT_DB_PREFIX."packages` WHERE guid = ?";
-			$result = $this->mDb->query( $query, array( $pPackage ) );
-			if( $row = $result->fetchRow() ){
-				$this->mPackagesConfig[$pPackage] = $row;
-				return $this->mPackagesConfig[$pPackage];
+			if( $result = $this->mDb->query( $query, array( $pPackage ) ) ){
+				if( $row = $result->fetchRow() ){
+					$this->mPackagesConfig[$pPackage] = $row;
+					return $this->mPackagesConfig[$pPackage];
+				}
 			}
 		}
 		return NULL;
@@ -1237,7 +1230,7 @@ class BitSystem extends BitBase {
 		if( $this->verifyPackageHash( $pParamHash ) ) {
 			if ( !empty( $pParamHash['package_store'] )){
 				$table = 'packages';
-				if( !$this->isPackageInstalled2( $pParamHash['guid'] ) ){
+				if( !$this->isPackageInstalled( $pParamHash['guid'] ) ){
 					$pParamHash['package_store']['guid'] = $pParamHash['guid'];
 					$result = $this->mDb->associateInsert( $table, $pParamHash['package_store'] );
 				}else{
@@ -1261,7 +1254,8 @@ class BitSystem extends BitBase {
 
 		$pParamHash['package_store']['version'] = !empty( $pParamHash['version'] )?$pParamHash['version']:'0.0.0';
 		$pParamHash['package_store']['homeable'] = (isset( $pParamHash['homeable'] ) && $pParamHash['homeable'] != TRUE)?'n':'y';
-		$pParamHash['package_store']['active'] = (isset( $pParamHash['active'] ) && $pParamHash['active'] != TRUE )?'n':'y';
+		$pParamHash['package_store']['active'] = (isset( $pParamHash['active'] ) && $pParamHash['active'] != TRUE )?NULL:'y';
+		$pParamHash['package_store']['required'] = (isset( $pParamHash['required'] ) && $pParamHash['required'] != FALSE )?'y':NULL;
 		$pParamHash['package_store']['name'] = !empty( $pParamHash['name'] )?$pParamHash['name']:ucfirst($pParamHash['guid']);
 		$pParamHash['package_store']['description'] = !empty( $pParamHash['description'] )?$pParamHash['description']:NULL;
 
@@ -1350,10 +1344,6 @@ class BitSystem extends BitBase {
 			);
 
 		}
-	}
-
-	function isPackageInstalled2( $pPackageGuid ){
-		return !is_null( $this->getPackageConfig( $pPackageGuid ) );
 	}
 
 	/// }}}
@@ -2165,6 +2155,7 @@ class BitSystem extends BitBase {
 	 * @return void
 	 */
 	function registerPackageVersion( $pPackage, $pVersion ) {
+		deprecated( 'BitSystem:registerPackageVersion is deprecated' );
 		if( !empty( $pPackage ) && $this->validateVersion( $pVersion )) {
 			$pPackage = strtolower( $pPackage );
 			$this->mPackages[$pPackage]['version'] = $pVersion;
@@ -2191,6 +2182,7 @@ class BitSystem extends BitBase {
 	 * @return void
 	 */
 	function registerRequirements( $pPackage, $pReqHash ) {
+		deprecated( 'BitSystem:registerRequirements is deprecated' );
 		if( !empty( $pPackage ) && $this->verifyRequirements( $pReqHash )) {
 			$pPackage = strtolower( $pPackage );
 			$this->mRequirements[$pPackage] = $pReqHash;
