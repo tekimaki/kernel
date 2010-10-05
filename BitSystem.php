@@ -1894,6 +1894,7 @@ class BitSystem extends BitBase {
 	 * @return void
 	 */
 	function registerSchemaTable( $pPackage, $pTableName, $pDataDict, $pRequired=FALSE, $pTableOptions=NULL ) {
+		deprecated( 'BitSystem:registerSchemaTable has been deprecated, please convert your schema_inc.php file to schema.yaml' );
 		$pPackage = strtolower( $pPackage ); // lower case for uniformity
 		if( !empty( $pTableName ) ) {
 			$this->mPackages[$pPackage]['tables'][$pTableName] = $pDataDict;
@@ -1913,6 +1914,7 @@ class BitSystem extends BitBase {
 	 * @return void
 	 */
 	function registerSchemaConstraints( $pPackage, $pTableName, $pConstraints ) {
+		deprecated( 'BitSystem:registerSchemaConstraints has been deprecated, please convert your schema_inc.php file to schema.yaml' );
 		$pPackage = strtolower( $pPackage);
 		if( !empty( $pTableName ) ) {
 			$this->mPackages[$pPackage]['constraints'][$pTableName] = $pConstraints;
@@ -1928,6 +1930,7 @@ class BitSystem extends BitBase {
 	 * @return TRUE on success, FALSE on failure - mErrors will contain reason for failure
 	 */
 	function registerUserPermissions( $pPackagedir, $pUserpermissions ) {
+		deprecated( 'BitSystem:registerUserPermissions has been deprecated, please convert your schema_inc.php file to schema.yaml' );
 		foreach( $pUserpermissions as $perm ) {
 			$this->mPermHash[$perm[0]] = $perm;
 			$this->mPermHash[$perm[0]]['sql'] = "INSERT INTO `".BIT_DB_PREFIX."users_permissions` (`perm_name`, `perm_desc`, `perm_level`, `package`) VALUES ('$perm[0]', '$perm[1]', '$perm[2]', '$perm[3]')";
@@ -1945,6 +1948,7 @@ class BitSystem extends BitBase {
 	 * @return TRUE on success, FALSE on failure - mErrors will contain reason for failure
 	 */
 	function registerConfig( $pPackagedir, $pPreferences ) {
+		deprecated( 'BitSystem:registerConfig has been deprecated, please convert your schema_inc.php file to schema.yaml' );
 		foreach( $pPreferences as $pref ) {
 			$this->registerSchemaDefault( $pPackagedir,
 				"INSERT INTO `".BIT_DB_PREFIX."kernel_config`(`package`,`config_name`,`config_value`) VALUES ('$pref[0]', '$pref[1]','$pref[2]')");
@@ -1960,6 +1964,7 @@ class BitSystem extends BitBase {
 	 * @return TRUE on success, FALSE on failure - mErrors will contain reason for failure
 	 */
 	function registerPreferences( $pPackagedir, $pPreferences ) {
+		deprecated( 'BitSystem:registerPreferences has been deprecated, please convert your schema_inc.php file to schema.yaml' );
 		$this->registerConfig( $pPackagedir, $pPreferences );
 	}
 
@@ -1971,6 +1976,7 @@ class BitSystem extends BitBase {
 	 * @return TRUE on success, FALSE on failure - mErrors will contain reason for failure
 	 */
 	function registerModules( $pModuleHash ) {
+		deprecated( 'BitSystem:registerModules has been deprecated, please convert your schema_inc.php file to schema.yaml' );
 		$this->mInstallModules = array_merge( $this->mInstallModules, $pModuleHash );
 	}
 
@@ -1982,6 +1988,7 @@ class BitSystem extends BitBase {
 	 * @access public
 	 */
 	function registerContentObjects( $pPackageName, $pClassesHash ) {
+		deprecated( 'BitSystem:registerContentObjects has been deprecated, please convert your schema_inc.php file to schema.yaml' );
 		$this->mContentClasses[$pPackageName] = $pClassesHash;
 	}
 
@@ -1994,6 +2001,7 @@ class BitSystem extends BitBase {
 	 * @return TRUE on success, FALSE on failure - mErrors will contain reason for failure
 	 */
 	function registerPackageInfo( $pPackage, $pInfoHash ) {
+		deprecated( 'BitSystem:registerPackageInfo has been deprecated, please convert your schema_inc.php file to schema.yaml' );
 		$pPackage = strtolower( $pPackage ); // lower case for uniformity
 		if( !empty( $this->mPackages[$pPackage]['info'] )) {
 			$this->mPackages[$pPackage]['info'] = array_merge( $this->mPackages[$pPackage]['info'], $pInfoHash );
@@ -2020,6 +2028,7 @@ class BitSystem extends BitBase {
 	 * @return TRUE on success, FALSE on failure - mErrors will contain reason for failure
 	 */
 	function registerSchemaSequences( $pPackage, $pSeqHash ) {
+		deprecated( 'BitSystem:registerSchemaSequences has been deprecated, please convert your schema_inc.php file to schema.yaml' );
 		$pPackage = strtolower( $pPackage ); // lower case for uniformity
 		if( empty( $this->mPackages[$pPackage]['sequences'] ) ){
 			$this->mPackages[$pPackage]['sequences'] = array();
@@ -2036,6 +2045,7 @@ class BitSystem extends BitBase {
 	 * @return TRUE on success, FALSE on failure - mErrors will contain reason for failure
 	 */
 	function registerSchemaIndexes( $pPackage, $pIndexHash ) {
+		deprecated( 'BitSystem:registerSchemaIndexes has been deprecated, please convert your schema_inc.php file to schema.yaml' );
 		$pPackage = strtolower( $pPackage ); // lower case for uniformity
 		if( empty( $this->mPackages[$pPackage]['indexes'] ) ){
 			$this->mPackages[$pPackage]['indexes'] = array();
@@ -2052,6 +2062,7 @@ class BitSystem extends BitBase {
 	 * @return TRUE on success, FALSE on failure - mErrors will contain reason for failure
 	 */
 	function registerSchemaDefault( $pPackage, $pMixedDefaultSql ) {
+		deprecated( 'BitSystem:registerSchemaDefault has been deprecated, please convert your schema_inc.php file to schema.yaml' );
 		$pPackage = strtolower( $pPackage ); // lower case for uniformity
 		if( empty( $this->mPackages[$pPackage]['defaults'] ) ) {
 			$this->mPackages[$pPackage]['defaults'] = array();
