@@ -570,44 +570,6 @@ class BitSystem extends BitBase {
 		$gBitSmarty->assign( 'TikiHelpInfo', array( 'URL' => 'http://doc.bitweaver.org/wiki/index.php?page=' . $package . $context , 'Desc' => $desc ) );
 	}
 
-	// === getPackageStatus
-	/**
-	 * find out a packages installation status
-	 * @param $pPackageName the name of the package to test
-	 *        where the package name is in the form used to index $mPackages
-	 * @return char where
-	 *              'i' is installed but not active
-	 *              'y' is installed and active
-	 *              'n' is not installed
-	 * @access public
-	 */
-	function getPackageStatus( $pPackageName ) {
-		deprecated( 'BitKernel:getPackageStatus is deprecated' );
-
-		// A package is installed if
-		//    $this->getConfig('package_'.$name) == 'i'
-		// or $this->getConfig('package_'.$name) == 'y'
-		//
-		// A package is installed and active if
-		//     <package name>_PKG_NAME is defined
-		// and $this->getConfig('package_'.$name) == 'y'
-
-		$ret = 'n';
-		if( defined( strtoupper( $pPackageName ).'_PKG_NAME' ) ) {
-			if( $name = strtolower( @constant(( strtoupper( $pPackageName ).'_PKG_NAME' )))) {
-				// kernel always active
-				if( $name == 'kernel' ) {
-					$ret = 'y';
-				} else {
-					// we have migrated the old tikiwiki feature_<pac
-					$ret = $this->getConfig( 'package_'.$name, 'n' );
-				}
-			}
-		}
-
-		return( $ret );
-	}
-
 	// === isPackageActive
 	/**
 	 * check's if a package is active.
@@ -892,7 +854,6 @@ class BitSystem extends BitBase {
 			$this->mPackagesConfig[$pkgNameKey]['url']  = BIT_ROOT_URL . basename( $path ) . '/';
 			$this->mPackagesConfig[$pkgNameKey]['path']  = BIT_ROOT_PATH . basename( $path ) . '/';
 			$this->mPackagesConfig[$pkgNameKey]['dir'] = $package_dir_name;
-			$this->mPackagesConfig[$pkgNameKey]['dir'] = $package_dir_name;
 			$this->mPackagesDirNameXref[$package_dir_name] = $pkgNameKey;
 
 			// Work around for old versions of IIS that do not support $_SERVER['SCRIPT_FILENAME'] - wolff_borg
@@ -904,7 +865,13 @@ class BitSystem extends BitBase {
 			// Define the package we are currently in
 			// I tried strpos instead of preg_match here, but it didn't like strings that begin with slash?! - spiderr
 			$scriptDir = ( basename( dirname( $_SERVER['SCRIPT_FILENAME'] ) ) );
-			if( !defined( 'ACTIVE_PACKAGE' ) && ( $scriptDir == constant( $pkgName.'_PKG_DIR' ) || isset( $_SERVER['ACTIVE_PACKAGE'] ) || preg_match( '!/'.$this->mPackagesConfig[$pkgNameKey]['dir'].'/!', $_SERVER['PHP_SELF'] ) || preg_match( '!/'.$pkgNameKey.'/!', $_SERVER['PHP_SELF'] ))) {
+			if( !defined( 'ACTIVE_PACKAGE' ) 
+				&& ( $scriptDir == constant( $pkgName.'_PKG_DIR' ) 
+					|| isset( $_SERVER['ACTIVE_PACKAGE'] ) 
+					|| preg_match( '!/'.$this->mPackagesConfig[$pkgNameKey]['dir'].'/!', $_SERVER['PHP_SELF'] ) 
+					|| preg_match( '!/'.$pkgNameKey.'/!', $_SERVER['PHP_SELF'] )
+					)
+				) {
 				if( isset( $_SERVER['ACTIVE_PACKAGE'] )) {
 					// perhaps the webserver told us the active package (probably because of mod_rewrites)
 					$pkgNameKey = $_SERVER['ACTIVE_PACKAGE'];
@@ -1012,20 +979,11 @@ class BitSystem extends BitBase {
 	 *
 	 * @param string $ pkgDir = Directory Name of package to load
 	 * @param string $ pScanFile file to be looked for
-	 * @param string $ autoRegister - TRUE = autoregister any packages that don't register on their own, FALSE = don't
 	 * @param string $ pOnce - TRUE = do include_once to load file FALSE = do include to load the file
 	 * @return none
 	 * @access public
 	 */
 	function loadPackage( $pPkgDir, $pScanFile, $pOnce=TRUE ) { 
-		#check if already loaded, loading again won't work with 'include_once' since
-		#no register call will be done, so don't auto register.
-		// DEPREACATED Auto Register - delete
-		/*
-		if( $pAutoRegister && !empty( $this->mPackagesDirNameXref[$pPkgDir] ) ) {
-			$pAutoRegister = FALSE;
-		}
-		*/
 
 		$this->mRegisterCalled = FALSE;
 		$scanFile = BIT_ROOT_PATH.$pPkgDir.'/'.$pScanFile;
@@ -1042,8 +1000,7 @@ class BitSystem extends BitBase {
 			}
 		}
 
-		/*
-		if( ( $file_exists || $pPkgDir == 'kernel' ) && !$this->mRegisterCalled ) {
+		if( $pPkgDir == 'kernel' ) {
 			$registerHash = array(
 				#for auto registered packages Registration Package Name = Package Directory Name
 				'package_name' => $pPkgDir,
@@ -1055,7 +1012,6 @@ class BitSystem extends BitBase {
 			}
 			$this->registerPackage( $registerHash );
 		}
-		*/
 	}
 
 	// === scanPackages
@@ -1895,203 +1851,6 @@ class BitSystem extends BitBase {
 		return( defined( 'IS_LIVE' ) && IS_LIVE );
 	}
 
-	// {{{=========================== Installer related methods ==============================
-	// Keep these methods in BitSystem that we can call verifyInstalledPackages() and other
-	// mthods without the need for an install/ package to be present.
-	/**
-	 * registerSchemaTable 
-	 * 
-	 * @param array $pPackage 
-	 * @param array $pTableName 
-	 * @param array $pDataDict 
-	 * @param array $pRequired 
-	 * @param array $pTableOptions 
-	 * @access public
-	 * @return void
-	 */
-	function registerSchemaTable( $pPackage, $pTableName, $pDataDict, $pRequired=FALSE, $pTableOptions=NULL ) {
-		deprecated( 'BitSystem:registerSchemaTable has been deprecated, please convert your schema_inc.php file to schema.yaml' );
-		$pPackage = strtolower( $pPackage ); // lower case for uniformity
-		if( !empty( $pTableName ) ) {
-			$this->mPackages[$pPackage]['tables'][$pTableName] = $pDataDict;
-			if( !empty( $pTableOptions ) ) {
-				$this->mPackages[$pPackage]['tables']['options'][$pTableName] = $pTableOptions;
-			}
-		}
-	}
-
-	/**
-	 * registerSchemaConstraints 
-	 * 
-	 * @param array $pPackage 
-	 * @param array $pTableName 
-	 * @param array $pConstraints 
-	 * @access public
-	 * @return void
-	 */
-	function registerSchemaConstraints( $pPackage, $pTableName, $pConstraints ) {
-		deprecated( 'BitSystem:registerSchemaConstraints has been deprecated, please convert your schema_inc.php file to schema.yaml' );
-		$pPackage = strtolower( $pPackage);
-		if( !empty( $pTableName ) ) {
-			$this->mPackages[$pPackage]['constraints'][$pTableName] = $pConstraints;
-		}
-	}
-
-	/**
-	 * registerUserPermissions 
-	 * 
-	 * @param array $pPackagedir 
-	 * @param array $pUserpermissions 
-	 * @access public
-	 * @return TRUE on success, FALSE on failure - mErrors will contain reason for failure
-	 */
-	function registerUserPermissions( $pPackagedir, $pUserpermissions ) {
-		deprecated( 'BitSystem:registerUserPermissions has been deprecated, please convert your schema_inc.php file to schema.yaml' );
-		foreach( $pUserpermissions as $perm ) {
-			$this->mPermHash[$perm[0]] = $perm;
-			$this->mPermHash[$perm[0]]['sql'] = "INSERT INTO `".BIT_DB_PREFIX."users_permissions` (`perm_name`, `perm_desc`, `perm_level`, `package`) VALUES ('$perm[0]', '$perm[1]', '$perm[2]', '$perm[3]')";
-			$this->registerSchemaDefault( $pPackagedir,
-				"INSERT INTO `".BIT_DB_PREFIX."users_permissions` (`perm_name`, `perm_desc`, `perm_level`, `package`) VALUES ('$perm[0]', '$perm[1]', '$perm[2]', '$perm[3]')");
-		}
-	}
-
-	/**
-	 * registerConfig 
-	 * 
-	 * @param array $pPackagedir 
-	 * @param array $pPreferences 
-	 * @access public
-	 * @return TRUE on success, FALSE on failure - mErrors will contain reason for failure
-	 */
-	function registerConfig( $pPackagedir, $pPreferences ) {
-		deprecated( 'BitSystem:registerConfig has been deprecated, please convert your schema_inc.php file to schema.yaml' );
-		foreach( $pPreferences as $pref ) {
-			$this->registerSchemaDefault( $pPackagedir,
-				"INSERT INTO `".BIT_DB_PREFIX."kernel_config`(`package`,`config_name`,`config_value`) VALUES ('$pref[0]', '$pref[1]','$pref[2]')");
-		}
-	}
-
-	/**
-	 * registerPreferences 
-	 * 
-	 * @param array $pPackagedir 
-	 * @param array $pPreferences 
-	 * @access public
-	 * @return TRUE on success, FALSE on failure - mErrors will contain reason for failure
-	 */
-	function registerPreferences( $pPackagedir, $pPreferences ) {
-		deprecated( 'BitSystem:registerPreferences has been deprecated, please convert your schema_inc.php file to schema.yaml' );
-		$this->registerConfig( $pPackagedir, $pPreferences );
-	}
-
-	/**
-	 * registerModules 
-	 * 
-	 * @param array $pModuleHash 
-	 * @access public
-	 * @return TRUE on success, FALSE on failure - mErrors will contain reason for failure
-	 */
-	function registerModules( $pModuleHash ) {
-		deprecated( 'BitSystem:registerModules has been deprecated, please convert your schema_inc.php file to schema.yaml' );
-		$this->mInstallModules = array_merge( $this->mInstallModules, $pModuleHash );
-	}
-
-	/**
-	 * registerContentObjects
-	 *
-	 * @param string $pPackageName the package name
-	 * @param hash $pClassesHash [$className => $pathToClassFile]
-	 * @access public
-	 */
-	function registerContentObjects( $pPackageName, $pClassesHash ) {
-		deprecated( 'BitSystem:registerContentObjects has been deprecated, please convert your schema_inc.php file to schema.yaml' );
-		$this->mContentClasses[$pPackageName] = $pClassesHash;
-	}
-
-	/**
-	 * registerPackageInfo 
-	 * 
-	 * @param array $pPackage 
-	 * @param array $pInfoHash 
-	 * @access public
-	 * @return TRUE on success, FALSE on failure - mErrors will contain reason for failure
-	 */
-	function registerPackageInfo( $pPackage, $pInfoHash ) {
-		deprecated( 'BitSystem:registerPackageInfo has been deprecated, please convert your schema_inc.php file to schema.yaml' );
-		$pPackage = strtolower( $pPackage ); // lower case for uniformity
-		if( !empty( $this->mPackages[$pPackage]['info'] )) {
-			$this->mPackages[$pPackage]['info'] = array_merge( $this->mPackages[$pPackage]['info'], $pInfoHash );
-		} else {
-			$this->mPackages[$pPackage]['info'] = $pInfoHash;
-		}
-		$this->mPackages[$pPackage]['info']['version'] = $this->getVersion( $pPackage );
-		$upgrade = $this->getLatestUpgradeVersion( $pPackage );
-		if( !empty( $upgrade ) && version_compare( $upgrade, $this->getVersion( $pPackage ), '>' )) {
-			if( $this->mPackages[$pPackage]['installed'] ) {
-				$this->mPackages[$pPackage]['info']['upgrade'] = $upgrade;
-			} else {
-				$this->mPackages[$pPackage]['info']['version'] = $upgrade;
-			}
-		}
-	}
-
-	/**
-	 * registerSchemaSequences 
-	 * 
-	 * @param array $pPackage 
-	 * @param array $pSeqHash 
-	 * @access public
-	 * @return TRUE on success, FALSE on failure - mErrors will contain reason for failure
-	 */
-	function registerSchemaSequences( $pPackage, $pSeqHash ) {
-		deprecated( 'BitSystem:registerSchemaSequences has been deprecated, please convert your schema_inc.php file to schema.yaml' );
-		$pPackage = strtolower( $pPackage ); // lower case for uniformity
-		if( empty( $this->mPackages[$pPackage]['sequences'] ) ){
-			$this->mPackages[$pPackage]['sequences'] = array();
-		}
-		$this->mPackages[$pPackage]['sequences'] = array_merge( $this->mPackages[$pPackage]['sequences'], $pSeqHash );
-	}
-
-	/**
-	 * registerSchemaIndexes 
-	 * 
-	 * @param array $pPackage 
-	 * @param array $pIndexHash 
-	 * @access public
-	 * @return TRUE on success, FALSE on failure - mErrors will contain reason for failure
-	 */
-	function registerSchemaIndexes( $pPackage, $pIndexHash ) {
-		deprecated( 'BitSystem:registerSchemaIndexes has been deprecated, please convert your schema_inc.php file to schema.yaml' );
-		$pPackage = strtolower( $pPackage ); // lower case for uniformity
-		if( empty( $this->mPackages[$pPackage]['indexes'] ) ){
-			$this->mPackages[$pPackage]['indexes'] = array();
-		}
-		$this->mPackages[$pPackage]['indexes'] = array_merge( $this->mPackages[$pPackage]['indexes'], $pIndexHash );
-	}
-
-	/**
-	 * registerSchemaDefault 
-	 * 
-	 * @param array $pPackage 
-	 * @param array $pMixedDefaultSql 
-	 * @access public
-	 * @return TRUE on success, FALSE on failure - mErrors will contain reason for failure
-	 */
-	function registerSchemaDefault( $pPackage, $pMixedDefaultSql ) {
-		deprecated( 'BitSystem:registerSchemaDefault has been deprecated, please convert your schema_inc.php file to schema.yaml' );
-		$pPackage = strtolower( $pPackage ); // lower case for uniformity
-		if( empty( $this->mPackages[$pPackage]['defaults'] ) ) {
-			$this->mPackages[$pPackage]['defaults'] = array();
-		}
-		if( is_array( $pMixedDefaultSql ) ) {
-			foreach( $pMixedDefaultSql as $def ) {
-				$this->mPackages[$pPackage]['defaults'][] = $def;
-			}
-		} elseif( is_string( $pMixedDefaultSql ) ) {
-			array_push( $this->mPackages[$pPackage]['defaults'], $pMixedDefaultSql );
-		}
-	}
-
 	/**
 	 * storeVersion will store the version number of a given package
 	 * 
@@ -2161,22 +1920,6 @@ class BitSystem extends BitBase {
 	}
 
 	/**
-	 * registerPackageVersion Holds the package version
-	 *
-	 * @param array $pPackage 
-	 * @param array $pVersion 
-	 * @access public
-	 * @return void
-	 */
-	function registerPackageVersion( $pPackage, $pVersion ) {
-		deprecated( 'BitSystem:registerPackageVersion is deprecated' );
-		if( !empty( $pPackage ) && $this->validateVersion( $pVersion )) {
-			$pPackage = strtolower( $pPackage );
-			$this->mPackages[$pPackage]['version'] = $pVersion;
-		}
-	}
-
-	/**
 	 * validateVersion 
 	 * 
 	 * @param array $pVersion 
@@ -2185,37 +1928,6 @@ class BitSystem extends BitBase {
 	 */
 	function validateVersion( $pVersion ) {
 		return( preg_match( "/^(\d+\.\d+\.\d+)(-dev|-alpha|-beta|-pl|-RC\d+)?$/", $pVersion ));
-	}
-
-	/**
-	 * registerRequirements 
-	 * 
-	 * @param array $pParams 
-	 * @param array $pReqHash 
-	 * @access public
-	 * @return void
-	 */
-	function registerRequirements( $pPackage, $pReqHash ) {
-		deprecated( 'BitSystem:registerRequirements is deprecated' );
-		if( !empty( $pPackage ) && $this->verifyRequirements( $pReqHash )) {
-			$pPackage = strtolower( $pPackage );
-			$this->mRequirements[$pPackage] = $pReqHash;
-
-			// and we display the info
-			$this->mPackages[$pPackage]['info']['requirements'] = '';
-			foreach( $pReqHash as $req => $version ) {
-				//$this->mPackages[$req]['is_requirement'] = TRUE;
-
-				$this->mPackages[$pPackage]['info']['requirements'] .= '<a class="external" href="http://www.bitweaver.org/wiki/'.ucfirst( $req ).'Package">'.ucfirst( $req ).'</a>';
-				$max = ( !empty( $version['max'] ) ? " - ".$version['max'] : '' );
-				if( $version['min'] != '0.0.0' ) {
-					$this->mPackages[$pPackage]['info']['requirements'] .= " (".$version['min'].$max.")";
-				}
-				$this->mPackages[$pPackage]['info']['requirements'] .= ", ";
-			}
-			// remove trailing ,
-			$this->mPackages[$pPackage]['info']['requirements'] = rtrim( trim( $this->mPackages[$pPackage]['info']['requirements'] ), "," );
-		}
 	}
 
 	/**
