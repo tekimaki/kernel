@@ -892,8 +892,8 @@ class BitSystem extends BitBase {
 			$this->mPackagesConfig[$pkgNameKey]['url']  = BIT_ROOT_URL . basename( $path ) . '/';
 			$this->mPackagesConfig[$pkgNameKey]['path']  = BIT_ROOT_PATH . basename( $path ) . '/';
 			$this->mPackagesConfig[$pkgNameKey]['dir'] = $package_dir_name;
-			$this->mPackagesDirNameXref[$package_dir_name] = $pkgNameKey;
 			$this->mPackagesConfig[$pkgNameKey]['dir'] = $package_dir_name;
+			$this->mPackagesDirNameXref[$package_dir_name] = $pkgNameKey;
 
 			// Work around for old versions of IIS that do not support $_SERVER['SCRIPT_FILENAME'] - wolff_borg
 			if( !array_key_exists( 'SCRIPT_FILENAME', $_SERVER )) {
@@ -1219,19 +1219,17 @@ class BitSystem extends BitBase {
 			if( $result = $this->mDb->query( $query, array( $pPackage ) ) ){
 				if( $row = $result->fetchRow() ){
 					$this->mPackagesConfig[$pPackage] = $row;
-					return $this->mPackagesConfig[$pPackage];
 				}
 			}
 		}
-		return NULL;
+		return !empty( $this->mPackagesConfig[$pPackage] )?$this->mPackagesConfig[$pPackage]:NULL;
 	}
 
 	function getPackageConfigValue( $pPackage, $pProperty ){
 		if( empty( $this->mPackagesConfig[$pPackage] ) ){
 			$this->getPackageConfig( $pPackage, TRUE );
 		}
-		$ret = !empty( $this->mPackagesConfig[$pPackage][$pProperty] )?$this->mPackagesConfig[$pPackage][$pProperty]:NULL;
-		return $ret;
+		return !empty( $this->mPackagesConfig[$pPackage][$pProperty] )?$this->mPackagesConfig[$pPackage][$pProperty]:NULL;
 	}
 
 	/// }}}
