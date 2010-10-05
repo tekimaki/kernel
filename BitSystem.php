@@ -1201,6 +1201,7 @@ class BitSystem extends BitBase {
 
 	function loadPackagesConfig( $pForce = FALSE ){
 		$this->getPackagesConfig( $pForce );
+		$this->mPackages = &$this->mPackagesConfig;
 	}
 
 	function getPackagesConfig( $pForce = FALSE ){
