@@ -53,7 +53,11 @@ class BitSystem extends BitBase {
 	// Initiate class variables
 
 	// Essential information about packages
+	// DEPRECATED @TODO Delete
 	var $mPackages = array();
+
+	// Installed Packages
+	var $mPackagesConfig = array();
 
 	// Cross Reference Package Directory Name => Package Key used as index into $mPackages
 	var $mPackagesDirNameXref = array();
@@ -1173,6 +1177,162 @@ class BitSystem extends BitBase {
 
 		return NULL;
 	}
+
+	function getPackageConfig( $pPackage, $pForce = FALSE ){
+		if( empty( $this->mPackagesConfig[$pPackage] ) || $pForce ){
+			$query = "SELECT * FROM `".BIT_DB_PREFIX."packages` WHERE guid = ?";
+			$result = $this->mDb->query( $query, array( $pPackage ) );
+			if( $row = $result->fetchRow() ){
+				$this->mPackagesConfig[$pPackage] = $row;
+				return $this->mPackagesConfig[$pPackage];
+			}
+		}
+		return NULL;
+	}
+
+	function getPackagesConfig( $pForce = FALSE ){
+		if( empty( $this->mPackagesConfig ) || $pForce ){
+			$query = "SELECT * FROM `".BIT_DB_PREFIX."packages`";
+			$result = $this->mDb->query( $query, array(), -1 );
+			$rslt = array();
+			while( $res = $result->fetchRow() ) {
+				$rslt[] = $res;
+			}
+			$this->mPackagesConfig = $rslt;
+		}
+		return $this->mPackagesConfig;
+	}
+
+	/// }}}
+
+	// {{{=========================== Package Storage Methods ==============================
+
+	/**
+	 * stores/updates a single record in the package table
+	 */
+	function storePackage( &$pParamHash, $gAutoReload = TRUE ){
+		if( $this->verifyPackageHash( $pParamHash ) ) {
+			if ( !empty( $pParamHash['package_store'] )){
+				$table = 'packages';
+				if( !$this->isPackageInstalled2( $pParamHash['guid'] ) ){
+					$pParamHash['package_store']['guid'] = $pParamHash['guid'];
+					$result = $this->mDb->associateInsert( $table, $pParamHash['package_store'] );
+				}else{
+					$locId = array( "guid" => $pParamHash['guid'] );
+					$result = $this->mDb->associateUpdate( $table, $pParamHash['package_store'], $locId );
+				}
+				$this->getPackageConfig( $pParamHash['guid'], TRUE );
+			}
+		}
+		return count( $this->mErrors ) == 0;
+	}
+
+	/** 
+	 * verifies a data set for storage in the kernel2_Package table
+	 * data is put into $pParamHash['package_store'] for storage
+	 */
+	function verifyPackageHash( &$pParamHash ){
+		if( empty( $pParamHash['guid'] ) ){
+			$this->mErrors['package'] = tra('A value for guid is required.');
+		}
+
+		$pParamHash['package_store']['version'] = !empty( $pParamHash['version'] )?$pParamHash['version']:'0.0.0';
+		$pParamHash['package_store']['homeable'] = (isset( $pParamHash['homeable'] ) && $pParamHash['homeable'] != TRUE)?'n':'y';
+		$pParamHash['package_store']['active'] = (isset( $pParamHash['active'] ) && $pParamHash['active'] != TRUE )?'n':'y';
+		$pParamHash['package_store']['name'] = !empty( $pParamHash['name'] )?$pParamHash['name']:ucfirst($pParamHash['guid']);
+		$pParamHash['package_store']['description'] = !empty( $pParamHash['description'] )?$pParamHash['description']:NULL;
+
+		// Use $pParamHash here since it handles validation right
+		// @TODO mod LibertyValidator so it can be used on first install; due to liberty plugin use in LibertyValidator it cant be used by installer on first install
+		// $this->validatePackageFields($pParamHash);
+		return( count( $this->mErrors )== 0 );
+	}
+
+
+	function expungePackage( &$pPackageGuid ){
+		$ret = FALSE;
+
+		$query = "DELETE FROM `packages` WHERE `guid` = ?";
+		if( $this->mDb->query( $query, array($pPackageGuid) ) ){
+			$ret = TRUE;
+		}
+
+		return $ret;
+	}
+
+
+	/**
+	 * previewPackageFields prepares the fields in this type for preview
+	 */
+	 function previewPackageFields(&$pParamHash) {
+		require_once( LIBERTY_PKG_PATH.'LibertyValidator.php' );
+		$this->prepPackageVerify();
+		LibertyValidator::preview(
+			$this->mVerification['package_store'],
+			$pParamHash,
+			$pParamHash['package_store']);
+	}
+
+
+	/**
+	 * validatePackageFields validates the fields in this type
+	 */
+	function validatePackageFields(&$pParamHash) {
+		require_once( LIBERTY_PKG_PATH.'LibertyValidator.php' );
+		$this->prepPackageVerify();
+		LibertyValidator::validate(
+			$this->mVerification['package_store'],
+			$pParamHash,
+			$this, $pParamHash['package_store']);
+	}
+
+	/**
+	 * prepPackageVerify prepares the object for input verification
+	 */
+	function prepPackageVerify() {
+		if (empty($this->mVerification['package_store'])) {
+
+	 		/* Validation for guid */
+			/*
+			$this->mVerification['package_store']['string']['guid'] = array(
+				'name' => 'Package Guid',
+				'required' => '1'
+			);
+			*/
+	 		/* Validation for version */
+			$this->mVerification['package_store']['string']['version'] = array(
+				'name' => 'Version',
+				'required' => '1',
+				'default' => '0.0.0'
+			);
+	 		/* Validation for homable */
+			$this->mVerification['package_store']['boolean']['homable'] = array(
+				'name' => 'Is Homable',
+				'required' => '1',
+				'default' => 'y'
+			);
+	 		/* Validation for active */
+			$this->mVerification['package_store']['boolean']['active'] = array(
+				'name' => 'Is Active',
+				'required' => '1',
+				'default' => 'n'
+			);
+	 		/* Validation for name */
+			$this->mVerification['package_store']['string']['name'] = array(
+				'name' => 'Name',
+			);
+	 		/* Validation for description */
+			$this->mVerification['package_store']['string']['description'] = array(
+				'name' => 'Description',
+			);
+
+		}
+	}
+
+	function isPackageInstalled2( $pPackageGuid ){
+		return !is_null( $this->getPackageConfig( $pPackageGuid ) );
+	}
+
 	/// }}}
 	
 

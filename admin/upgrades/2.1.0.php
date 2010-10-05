@@ -15,7 +15,7 @@ $gBitInstaller->registerPackageUpgrade( $infoHash, array(
 array( 'DATADICT' => array(
 	array( 'CREATE' => array(
 		'packages' => "
-		  package_guid C(64) PRIMARY,
+		  guid C(64) PRIMARY,
 		  version C(16) NOTNULL DEFAULT '0.0.0',
 		  homeable C(1) DEFAULT 'y',
 		  active C(1) DEFAULT NULL,
