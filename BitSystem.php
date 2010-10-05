@@ -999,7 +999,7 @@ class BitSystem extends BitBase {
 
 		if( $pPkgDir == 'kernel' ) {
 			$registerHash = array(
-				efor auto registered packages Registration Package Name = Package Directory Name
+				// for auto registered packages Registration Package Name = Package Directory Name
 				'package_name' => $pPkgDir,
 				'package_path' => BIT_ROOT_PATH.$pPkgDir.'/',
 				'activatable' => FALSE,
