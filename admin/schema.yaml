@@ -49,12 +49,12 @@ kernel:
 
     packages: |
 
-      package_guid C(64) PRIMARY,
+      guid C(64) PRIMARY,
       version C(16) NOTNULL DEFAULT '0.0.0',
-      homable C(1) NOTNULL DEFAULT 'y',
+      homeable C(1) NOTNULL DEFAULT 'y',
       active C(1) NOTNULL DEFAULT 'n',
       name C(64),
-      description C(250),
+      description C(250)
       
   preferences: 
     site_online_help: y
