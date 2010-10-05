@@ -1205,12 +1205,9 @@ class BitSystem extends BitBase {
 
 	function getPackagesConfig( $pForce = FALSE ){
 		if( empty( $this->mPackagesConfig ) || $pForce ){
-			$query = "SELECT * FROM `".BIT_DB_PREFIX."packages`";
-			if( $result = $this->mDb->query( $query, array(), -1 ) ){
-				while( $res = $result->fetchRow() ) {
-					$rslt[] = $res;
-				}
-				$this->mPackagesConfig = $rslt;
+			$query = "SELECT guid as key, * FROM `".BIT_DB_PREFIX."packages`";
+			if( $result = $this->mDb->getAssoc( $query ) ){
+				$this->mPackagesConfig = $result;
 			}
 		}
 		return $this->mPackagesConfig;
