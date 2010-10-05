@@ -1172,10 +1172,14 @@ class BitSystem extends BitBase {
 
 		$scanFile = BIT_ROOT_PATH.$pPkgDir.'/admin/schema.yaml';
 		if( file_exists( $scanFile ) ) {
-			$pkgArray = Spyc::YAMLLoad( $scanFile );
-			$keys = array_keys( $pkgArray ); // get the subhash without knowing the pkg name
-			$pkgArray[$keys[0]]['path'] = BIT_ROOT_PATH.$pPkgDir.'/';
-			return $pkgArray;
+			$pkgHash = Spyc::YAMLLoad( $scanFile );
+			// modify the hash a little
+			$keys = array_keys( $pkgHash ); // get the package guid 
+			// assign the guid
+			$pkgHash[$keys[0]]['guid'] = $keys[0];
+			// assign the path
+			$pkgHash[$keys[0]]['path'] = BIT_ROOT_PATH.$pPkgDir.'/';
+			return $pkgHash;
 		}
 
 		return NULL;
