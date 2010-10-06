@@ -27,8 +27,7 @@
 							</div>
 							{forminput}
 								<strong>{$package.name|capitalize}</strong>
-								{set var=$info.version value=$package.version}
-								{formhelp note=`$info` package=$guid}
+								{include file="bitpackage:kernel/package_help_inc.tpl" package=$gBitSystem->mPackagesSchemas.$guid}
 							{/forminput}
 						</div>
 					{/foreach}
@@ -40,16 +39,16 @@
 						{biticon iname="large/dialog-warning" iexplain="Warning"} {tr}You seem to have at least one package that can be upgraded.{/tr} <a href="{$smarty.const.INSTALL_PKG_URL}install.php?step=4">{tr}We recommend you visit the installer now{/tr}</a>.
 					</p>
 
-					{foreach from=$upgradable item=package key=name}
+					{foreach from=$upgradable item=package key=guid}
 						<div class="row">
 							<div class="formlabel">
-								<label for="package_{$name}">{biticon ipackage=$name iname="pkg_`$name`" iexplain="$name" iforce=icon}</label>
+								<label for="package_{$guid}">{biticon ipackage=$guid iname="pkg_`$guid`" iexplain="$package.name" iforce=icon}</label>
 							</div>
 							{forminput}
 								<label>
 									<strong>{$package.name}</strong>
 								</label>
-								{formhelp note=`$package.info` force='y'}
+								{include file="bitpackage:kernel/package_help_inc.tpl" package=$gBitSystem->mPackagesSchemas.$guid}
 							{/forminput}
 						</div>
 					{/foreach}
@@ -95,7 +94,7 @@
 										{/if}
 									{/foreach}
 								</label>
-								{formhelp note=`$package.info` package=$name}
+								{include file="bitpackage:kernel/package_help_inc.tpl" package=$gBitSystem->mPackagesSchemas.$name}
 							{/forminput}
 						</div>
 					{/if}
@@ -139,7 +138,7 @@
 									<br />
 									{tr}Service Type{/tr}: <strong>{$package.service|capitalize|replace:"_":" "}</strong>
 								</label>
-								{formhelp note=`$package.info` package=$name}
+								{include file="bitpackage:kernel/package_help_inc.tpl" package=$gBitSystem->mPackagesSchemas.$name}
 							{/forminput}
 						</div>
 					{/if}
@@ -162,8 +161,7 @@
 							</div>
 							{forminput}
 								<strong>{$package.name|capitalize}</strong>
-								{set var=$info.version value=$package.version}
-								{formhelp note=`$info` package=$guid}
+								{include file="bitpackage:kernel/package_help_inc.tpl" package=$gBitSystem->mPackagesSchemas.$guid}
 							{/forminput}
 						</div>
 					{/if}
@@ -180,7 +178,7 @@
 								<label>
 									<strong>{$name|capitalize}</strong>
 								</label>
-								{formhelp note=`$package.info` package=$name}
+								{include file="bitpackage:kernel/package_help_inc.tpl" package=$gBitSystem->mPackagesSchemas.$name}
 							{/forminput}
 						</div>
 					{/if}
@@ -299,9 +297,7 @@
 								{biticon ipackage=$guid iname="pkg_`$guid`" iexplain=$package.name iforce=icon}
 							</div>
 							{forminput}
-								{$package.name}
-								{set var=$info.version value=$package.version}
-								{formhelp note=$info package=$guid force='y'}
+								{include file="bitpackage:kernel/package_help_inc.tpl" package=$gBitSystem->mPackagesSchemas.$guid}
 							{/forminput}
 						</div>
 					{/if}
