@@ -18,7 +18,7 @@
 				{if $newrequired}
 				{legend legend="Required packages"}
 					<p class="warning">
-						{biticon iname="large/dialog-warning" iexplain="Warning"} {tr}You seem to have at least one required package that is not installed.{/tr} <a href="{$smarty.const.INSTALL_PKG_URL}install.php?step=4">{tr}We recommend you visit the installer now{/tr}</a>.
+						{biticon iname="large/dialog-warning" iexplain="Warning"} {tr}You seem to have at least one required package that is not installed.{/tr} <a href="{$smarty.const.INSTALL_PKG_URL}install.php?step=3">{tr}We recommend you visit the installer now{/tr}</a>.
 					</p>
 					{foreach key=guid item=package from=$newrequired}
 						<div class="row">
