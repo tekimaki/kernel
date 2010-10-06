@@ -1953,7 +1953,7 @@ class BitSystem extends BitBase {
 				$ret[$guid] = $pkg;
 				$ret[$guid]['info'] = array(
 					'version' => $pkg['version'],
-					'upgrade' => $schema[$guid]['version']
+					'upgrade' => $schemas[$guid]['version']
 				);
 			}
 		}
