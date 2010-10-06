@@ -1182,14 +1182,16 @@ class BitSystem extends BitBase {
 
 	function loadPackagesConfig( $pForce = FALSE ){
 		$this->getPackagesConfig( $pForce );
-		$this->mPackages = &$this->mPackagesConfig;
+		if( empty( $this->mPackages ) ){
+			$this->mPackages = &$this->mPackagesConfig;
+		}
 	}
 
 	function getPackagesConfig( $pForce = FALSE ){
 		if( empty( $this->mPackagesConfig ) || $pForce ){
 			$query = "SELECT guid as key, * FROM `".BIT_DB_PREFIX."packages`";
 			if( $result = $this->mDb->getAssoc( $query ) ){
-				$this->mPackagesConfig = $result;
+				$this->mPackagesConfig = &$result;
 			}
 		}
 		return $this->mPackagesConfig;
@@ -1249,7 +1251,7 @@ class BitSystem extends BitBase {
 
 		$pParamHash['package_store']['version'] = !empty( $pParamHash['version'] )?$pParamHash['version']:'0.0.0';
 		$pParamHash['package_store']['homeable'] = (isset( $pParamHash['homeable'] ) && $pParamHash['homeable'] != TRUE)?'n':'y';
-		$pParamHash['package_store']['active'] = (isset( $pParamHash['active'] ) && $pParamHash['active'] != TRUE )?NULL:'y';
+		$pParamHash['package_store']['active'] = (isset( $pParamHash['active'] ) && ( $pParamHash['active'] != TRUE || $pParamHash['active'] != 'y') )?'n':'y';
 		$pParamHash['package_store']['required'] = (isset( $pParamHash['required'] ) && $pParamHash['required'] != FALSE )?'y':NULL;
 		$pParamHash['package_store']['name'] = !empty( $pParamHash['name'] )?$pParamHash['name']:ucfirst($pParamHash['guid']);
 		$pParamHash['package_store']['description'] = !empty( $pParamHash['description'] )?$pParamHash['description']:NULL;
@@ -1339,6 +1341,24 @@ class BitSystem extends BitBase {
 			);
 
 		}
+	}
+
+	function activatePackage( $pPackageGuid ){
+		if( $this->isPackageInstalled( $pPackageGuid ) ){
+			$storeHash = $this->getPackageConfig( $pPackageGuid );
+			$storeHash['active'] = 'y';
+			$this->storePackage( $storeHash );
+		}
+		return( count( $this->mErrors )== 0 );
+	}
+
+	function deactivatePackage( $pPackageGuid ){
+		if( $this->isPackageInstalled( $pPackageGuid ) ){
+			$storeHash = $this->getPackageConfig( $pPackageGuid );
+			$storeHash['active'] = 'n';
+			$this->storePackage( $storeHash );
+		}
+		return( count( $this->mErrors )== 0 );
 	}
 
 	/// }}}
