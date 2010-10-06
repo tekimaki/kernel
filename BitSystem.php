@@ -1883,11 +1883,11 @@ class BitSystem extends BitBase {
 		global $gBitSystem;
 		if( empty( $pPackage )) {
 			$config = 'bitweaver_version';
-		} else {
-			$config = "package_".$pPackage."_version";
+			return $gBitSystem->getConfig( 'bitweaver_version', $pDefault );
+		} elseif( !empty( $this->mPackagesConfig[$pPackage] ) ){
+			return $this->mPackagesConfig[$pPackage]['version'];
 		}
-
-		return $gBitSystem->getConfig( $config, $pDefault );
+		return NULL;
 	}
 
 	/**

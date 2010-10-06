@@ -27,9 +27,9 @@
 							</div>
 							{forminput}
 								<label>
-									<strong>{$name|capitalize}</strong>
+									<strong>{$package.name}</strong>
 								</label>
-								{formhelp note=`$package.info`}
+								{formhelp note=`$package.info` force='y'}
 							{/forminput}
 						</div>
 					{/foreach}
@@ -45,8 +45,8 @@
 
 				{$install_unavailable}
 
-				{foreach key=name item=package from=$gBitSystem->mPackages}
-					{if $package.installed && !$package.service && !$package.required}
+				{foreach key=name item=package from=$gBitSystem->mPackagesConfig}
+					{if !$package.required}
 						<div class="row">
 							<div class="formlabel">
 								<label for="package_{$name}">{biticon ipackage=$name iname="pkg_`$name`" iexplain="$name" iforce=icon}</label>
@@ -87,7 +87,7 @@
 					{tr}A service package is a package that allows you to extend the way you display bitweaver content - such as <em>categorising your content</em>. Activating more than one of any service type might lead to conflicts.<br />
 					We therefore recommend that you <em>	enable only one of each</em> <strong>service type</strong>.{/tr}
 				</p>
-				{foreach key=name item=package from=$gBitSystem->mPackages}
+				{foreach key=name item=package from=$gBitSystem->mPackagesConfig}
 					{if $package.installed && $package.service && !$package.required}
 						<div class="row">
 							<div class="formlabel">
@@ -133,22 +133,23 @@
 
 		{jstab title="Required"}
 			{legend legend="Required packages installed on your system"}
-				{foreach key=name item=package from=$gBitSystem->mPackages}
-					{if $package.installed && !$package.service && $package.required}
+				{foreach key=guid item=package from=$gBitSystem->mPackagesSchemas}
+					{if $package.required}
 						<div class="row">
 							<div class="formlabel">
-								{biticon ipackage=$name iname="pkg_`$name`" iexplain="$name" iforce=icon}
+								{biticon ipackage=$guid iname="pkg_`$guid`" iexplain=$package.name iforce=icon}
 							</div>
 							{forminput}
-								<strong>{$name|capitalize}</strong>
-								{formhelp note=`$package.info` package=$name}
+								<strong>{$package.name|capitalize}</strong>
+								{set var=$info.version value=$package.version}
+								{formhelp note=`$info` package=$guid}
 							{/forminput}
 						</div>
 					{/if}
 				{/foreach}
 			{/legend}
 			{legend legend="Required services installed on your system"}
-				{foreach key=name item=package from=$gBitSystem->mPackages}
+				{foreach key=name item=package from=$gBitSystem->mPackagesConfig}
 					{if $package.installed && $package.service && $package.required}
 						<div class="row">
 							<div class="formlabel">
@@ -270,15 +271,16 @@
 
 				<hr style="clear:both" />
 
-				{foreach key=name item=package from=$gBitSystem->mPackages}
-					{if ((1 or $package.tables) && !$package.required && !$package.installed) }
+				{foreach key=guid item=package from=$gBitSystem->mPackagesSchemas}
+					{if !$package.required && !$gBitSystem->mPackagesConfig.$guid }
 						<div class="row">
 							<div class="formlabel">
-								{biticon ipackage=$name iname="pkg_`$name`" iexplain="$name" iforce=icon}
+								{biticon ipackage=$guid iname="pkg_`$guid`" iexplain=$package.name iforce=icon}
 							</div>
 							{forminput}
-								{$name|capitalize}
-								{formhelp note=`$package.info` package=$name}
+								{$package.name}
+								{set var=$info.version value=$package.version}
+								{formhelp note=$info package=$guid force='y'}
 							{/forminput}
 						</div>
 					{/if}

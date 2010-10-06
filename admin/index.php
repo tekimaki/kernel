@@ -66,7 +66,7 @@ if( !empty( $_REQUEST["page"] )) {
 } else {
 	$adminTemplates = array();
 	// deal with package sorting for a unified layout
-	$packages = array_keys( $gBitSystem->mPackages );
+	$packages = array_keys( $gBitSystem->mPackagesConfig );
 	asort( $packages );
 	$packages = array_unique( array_merge( array( 'kernel', 'liberty', 'users', 'themes' ), $packages ));
 	foreach( $packages as $package ) {

@@ -9,61 +9,46 @@
 // Process Packages form
 $fPackage = &$_REQUEST['fPackage'];   // emulate register_globals
 
-# rescan to include all packages, installed and not installed
-$gBitSystem->scanPackages(
-	'bit_setup_inc.php', TRUE, 'all', TRUE, TRUE
-);
-
-// make a copy of mPackages - expensive, but this is low use code
-
 if( !empty( $_REQUEST['features'] ) ) {
-	$pkgArray = $gBitSystem->mPackages;
-	foreach( array_keys( $pkgArray ) as $pkgKey ) {
-		$pkg = $pkgArray[$pkgKey];
-		if( !empty( $pkg['name'] )) {
-			$pkgName = strtolower( $pkg['name'] );
+	$pkgArray = $gBitSystem->mPackagesConfig;
+	foreach( $pkgArray as $pkgKey=>$pkg ) {
+		if( !empty( $pkg['guid'] )) {
+			$pkgName = strtolower( $pkg['guid'] );
 			// can only change already installed packages that are not required
 			if( $gBitSystem->isPackageInstalled( $pkgName ) && empty( $pkg['required'] )) {
 				if( isset( $_REQUEST['fPackage'][$pkgName] )) {
 					// mark installed and active
-					$gBitSystem->storeConfig( 'package_'.$pkgName, 'y', $pkgName );
-					unset( $pkgArray[$pkgKey] );
+					$gBitSystem->activatePackage( $pkgName );
 				} else {
 					// mark installed but not active
-					$gBitSystem->storeConfig( 'package_'.$pkgName, 'i', $pkgName );
-					unset( $pkgArray[$pkgKey] );
+					$gBitSystem->deactivatePackage( $pkgName );
 				}
 			}
 		}
 	}
+	// after updates reload the config
+	$gBitSystem->loadPackagesConfig( TRUE );
 }
 
-$gBitSystem->verifyInstalledPackages();
+// $gBitSystem->verifyInstalledPackages();	// this causes some weird rendering issues - wjames	
 $gBitSmarty->assign( 'requirements', $gBitSystem->calculateRequirements( TRUE ) );
 $gBitSmarty->assign( 'requirementsMap', $gBitSystem->drawRequirementsGraph( TRUE, 'cmapx' ));
 
+$gBitSystem->loadPackagesSchemas();
+
 $upgradable = array();
-foreach( $gBitSystem->mPackages as $name => &$pkg ) {
-	if( $gBitSystem->isPackageInstalled( $name ) && !empty( $pkg['info']['upgrade'] )) {
-		/* god damn it right here, deprecate checking tables - force installed for all upgrades
-		// If no tables then just do a quiet 'auto-upgrade' of version number
-		if( !isset( $pkg['tables'] ) || empty( $pkg['tables'] ) ) {
-			$gBitSystem->storeVersion( $name, $pkg['info']['upgrade'] );
-			$gBitSystem->registerPackageVersion( $name, $pkg['info']['upgrade'] );
-			$pkg['info']['version'] = $pkg['info']['upgrade'];
-			unset( $pkg['info']['upgrade'] );
-		} else { // add to a list of displayed packages that need upgrading
-		*/
-			// only display relevant information to keep things tight.
-			$upgradable[$name]['info']['version'] = $pkg['info']['version'];
-			$upgradable[$name]['info']['upgrade'] = $pkg['info']['upgrade'];
-		/*
-		}
-		*/
+foreach( $gBitSystem->mPackagesConfig as $pkgGuid => $pkg ) {
+	if( $gBitSystem->isPackageInstalled( $pkgGuid ) && version_compare( $pkg['version'], $gBitSystem->mPackagesSchemas[$pkgGuid]['version'], "<" )) {
+		// only display relevant information to keep things tight.
+		$upgradable[$pkgGuid] = $pkg;
+		$upgradable[$pkgGuid]['info'] = array(
+			'version' => $pkg['version'],
+			'upgrade' => $gBitSystem->mPackagesSchemas[$pkgGuid]['version']
+			);
 	}
 }
 $gBitSmarty->assign( 'upgradable', $upgradable );
 
 // So packages will be listed in alphabetical order
-ksort( $gBitSystem->mPackages );
-?>
+ksort( $gBitSystem->mPackagesConfig );
+ksort( $gBitSystem->mPackagesSchemas );
