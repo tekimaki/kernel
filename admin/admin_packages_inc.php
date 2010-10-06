@@ -34,32 +34,9 @@ if( !empty( $_REQUEST['features'] ) ) {
 $gBitSmarty->assign( 'requirements', $gBitSystem->calculateRequirements( TRUE ) );
 $gBitSmarty->assign( 'requirementsMap', $gBitSystem->drawRequirementsGraph( TRUE, 'cmapx' ));
 
-$gBitSystem->loadPackagesSchemas();
-
-$newrequired = array();
-foreach( $gBitSystem->mPackagesSchemas as $pkgGuid => $pkg ){
-	if( $gBitSystem->isPackageRequired($pkgGuid) && !$gBitSystem->isPackageInstalled( $pkgGuid ) ){
-		// only display relevant information to keep things tight.
-		$newrequired[$pkgGuid] = $pkg;
-		$newrequired[$pkgGuid]['info'] = array(
-			'version' => $pkg['version'],
-			'upgrade' => $gBitSystem->mPackagesSchemas[$pkgGuid]['version']
-			);
-	}
-}
-$gBitSmarty->assign( 'newrequired', $newrequired );
-$upgradable = array();
-foreach( $gBitSystem->mPackagesConfig as $pkgGuid => $pkg ) {
-	if( $gBitSystem->isPackageInstalled( $pkgGuid ) && version_compare( $pkg['version'], $gBitSystem->mPackagesSchemas[$pkgGuid]['version'], "<" )) {
-		// only display relevant information to keep things tight.
-		$upgradable[$pkgGuid] = $pkg;
-		$upgradable[$pkgGuid]['info'] = array(
-			'version' => $pkg['version'],
-			'upgrade' => $gBitSystem->mPackagesSchemas[$pkgGuid]['version']
-			);
-	}
-}
-$gBitSmarty->assign( 'upgradable', $upgradable );
+// Package updates
+$gBitSmarty->assign( 'newrequired', $gBitSystem->getNewRequiredPackages() );
+$gBitSmarty->assign( 'upgradable', $gBitSystem->getUpgradablePackages() );
 
 // So packages will be listed in alphabetical order
 ksort( $gBitSystem->mPackagesConfig );

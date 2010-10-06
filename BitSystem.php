@@ -1944,6 +1944,22 @@ class BitSystem extends BitBase {
 		return(( $ret == '0.0.0' ) ? FALSE : $ret );
 	}
 
+	function getUpgradablePackages(){
+		$ret = array();
+		$config = $this->getPackagesConfig();
+		$schemas = $this->getPackagesSchemas();
+		foreach( $config as $guid => $pkg ) {
+			if( version_compare( $pkg['version'], $schemas[$guid]['version'], "<" )) {
+				$ret[$guid] = $pkg;
+				$ret[$guid]['info'] = array(
+					'version' => $pkg['version'],
+					'upgrade' => $schema[$guid]['version']
+				);
+			}
+		}
+		return $ret;
+	}
+
 	/**
 	 * validateVersion 
 	 * 
@@ -2002,6 +2018,17 @@ class BitSystem extends BitBase {
 		if( !empty( $pPackage )) {
 			if( $config = $this->getPackageSchema($pPackage) ){
 				return !empty( $config['requirements'] )?$config['requirements']:NULL;
+			}
+		}
+		return $ret;
+	}
+
+	function getNewRequiredPackages(){
+		$ret = array();
+		$schemas = $this->getPackagesSchemas();
+		foreach( $schemas as $guid=>$package ){
+			if( $this->isPackageRequired($guid) && !$this->isPackageInstalled($guid) ){
+				$ret[$guid] = $package;
 			}
 		}
 		return $ret;
