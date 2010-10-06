@@ -614,6 +614,16 @@ class BitSystem extends BitBase {
 		return !is_null( $this->getPackageConfig( $pPackageGuid ) );
 	}
 
+	// === isPackageRequired
+	/**
+	 * check's if a package is required.
+	 * @param $pPackageGuid the guid of the package to test
+	 * @return boolean
+	 * @access public
+	 */
+	function isPackageRequired( $pPackageGuid ) {
+		return( $this->getPackageSchemaValue( $pPackageGuid, 'required' ) == 'y' );
+	}
 
 	// === verifyPackage
 	/**
@@ -1085,7 +1095,7 @@ class BitSystem extends BitBase {
 	 * scans all packages and loads their schema.yaml file
 	 */
 	function loadPackagesSchemas(){
-		$this->mPackagesSchemas = $this->getPackagesSchemas();
+		$this->getPackagesSchemas( TRUE );
 
 		// @TODO Deprecate this too - issue is in install pkg where it tries to reconcile permissions issues
 		foreach( $this->mPackagesSchemas as $package=>$pkgHash ){
@@ -1099,38 +1109,41 @@ class BitSystem extends BitBase {
 		}
 	}
 
-	function getPackagesSchemas(){
+	function getPackagesSchemas( $pForce = FALSE ){
 		$ret = array();
-
-		// gPreScan may hold a list of packages that must be loaded first
-		global $gPreScan;
-		if( !empty( $gPreScan ) && is_array( $gPreScan )) {
-			foreach( $gPreScan as $pkgDir ) {
-				$loadPkgs[] = $pkgDir;
-			}
-		}
-
-		// load lib configs
-		if( $pkgDir = opendir( BIT_ROOT_PATH )) {
-			while( FALSE !== ( $dirName = readdir( $pkgDir ))) {
-				if( $dirName != '..'  && $dirName != '.' && is_dir( BIT_ROOT_PATH . '/' . $dirName ) && $dirName != 'CVS' && preg_match( '/^\w/', $dirName )) {
-					$loadPkgs[] = $dirName;
+		if( empty( $this->mPackagesSchemas ) || $pForce ){
+			// gPreScan may hold a list of packages that must be loaded first
+			global $gPreScan;
+			if( !empty( $gPreScan ) && is_array( $gPreScan )) {
+				foreach( $gPreScan as $pkgDir ) {
+					$loadPkgs[] = $pkgDir;
 				}
 			}
-		}
-		$loadPkgs = array_unique( $loadPkgs );
 
-		// load the list of pkgs in the right order
-		foreach( $loadPkgs as $loadPkg ) {
-			if( $schema = $this->getPackageSchema( $loadPkg ) ){
-				$ret = array_merge( $ret, $schema );
+			// load lib configs
+			if( $pkgDir = opendir( BIT_ROOT_PATH )) {
+				while( FALSE !== ( $dirName = readdir( $pkgDir ))) {
+					if( $dirName != '..'  && $dirName != '.' && is_dir( BIT_ROOT_PATH . '/' . $dirName ) && $dirName != 'CVS' && preg_match( '/^\w/', $dirName )) {
+						$loadPkgs[] = $dirName;
+					}
+				}
 			}
+			$loadPkgs = array_unique( $loadPkgs );
+
+			// load the list of pkgs in the right order
+			foreach( $loadPkgs as $loadPkg ) {
+				if( $schema = $this->loadPackageSchema( $loadPkg ) ){
+					$ret = array_merge( $ret, $schema );
+				}
+			}
+
+			$this->mPackagesSchemas = $ret;
 		}
 
-		return $ret;
+		return $this->mPackagesSchemas;
 	}
 
-	function getPackageSchema( $pPkgDir ){
+	function loadPackageSchema( $pPkgDir ){
 		require_once( UTIL_PKG_PATH.'spyc/spyc.php' );
 
 		$scanFile = BIT_ROOT_PATH.$pPkgDir.'/admin/schema.yaml';
@@ -1150,6 +1163,21 @@ class BitSystem extends BitBase {
 		}
 
 		return NULL;
+	}
+
+	function getPackageSchema( $pPackage ){
+		// is there any schema data? if not load it up
+		if( empty( $this->mPackagesSchemas ) ){
+			$this->loadPackagesSchemas();
+		}
+		return (!empty( $this->mPackagesSchemas[$pPackage] )?$this->mPackagesSchemas[$pPackage]:NULL);
+	}
+
+	function getPackageSchemaValue( $pPackage, $pProperty ){
+		if( empty( $this->mPackagesSchemas[$pPackage] ) ){
+			$this->getPackageSchema( $pPackage, TRUE );
+		}
+		return !empty( $this->mPackagesSchemas[$pPackage][$pProperty] )?$this->mPackagesSchemas[$pPackage][$pProperty]:NULL;
 	}
 
 	function loadPackagesConfig( $pForce = FALSE ){
@@ -1972,9 +2000,8 @@ class BitSystem extends BitBase {
 	function getRequirements( $pPackage ) {
 		$ret = array();
 		if( !empty( $pPackage )) {
-			$pPackage = strtolower( $pPackage );
-			if( !empty( $this->mRequirements[$pPackage] )) {
-				return $this->mRequirements[$pPackage];
+			if( $config = $this->getPackageSchema($pPackage) ){
+				return !empty( $config['requirements'] )?$config['requirements']:NULL;
 			}
 		}
 		return $ret;
@@ -1990,7 +2017,7 @@ class BitSystem extends BitBase {
 	function calculateRequirements( $pInstallVersion = FALSE ) {
 		$ret = array();
 		// first we gather all version information.
-		foreach( array_keys( $this->mPackages ) as $package ) {
+		foreach( array_keys( $this->getPackagesConfig() ) as $package ) {
 			if( $this->isPackageInstalled( $package )) {
 
 				// get the latest upgrade version, since this is the version the package will be at after install

@@ -13,8 +13,28 @@
 {form class=$pageName|replace:'packages':'pkg'}
 	<input type="hidden" name="page" value="{$page}" />
 	{jstabs}
-		{if $upgradable}
-			{jstab title="Upgradable"}
+		{if $upgradable || $newrequired}
+			{jstab title="Updates"}
+				{if $newrequired}
+				{legend legend="Required packages"}
+					<p class="warning">
+						{biticon iname="large/dialog-warning" iexplain="Warning"} {tr}You seem to have at least one required package that is not installed.{/tr} <a href="{$smarty.const.INSTALL_PKG_URL}install.php?step=4">{tr}We recommend you visit the installer now{/tr}</a>.
+					</p>
+					{foreach key=guid item=package from=$newrequired}
+						<div class="row">
+							<div class="formlabel">
+								{biticon ipackage=$guid iname="pkg_`$guid`" iexplain=$package.name iforce=icon}
+							</div>
+							{forminput}
+								<strong>{$package.name|capitalize}</strong>
+								{set var=$info.version value=$package.version}
+								{formhelp note=`$info` package=$guid}
+							{/forminput}
+						</div>
+					{/foreach}
+				{/legend}
+				{/if}
+				{if $upgradable}
 				{legend legend="Upgradable packages"}
 					<p class="warning">
 						{biticon iname="large/dialog-warning" iexplain="Warning"} {tr}You seem to have at least one package that can be upgraded.{/tr} <a href="{$smarty.const.INSTALL_PKG_URL}install.php?step=4">{tr}We recommend you visit the installer now{/tr}</a>.
@@ -34,6 +54,7 @@
 						</div>
 					{/foreach}
 				{/legend}
+				{/if}
 			{/jstab}
 		{/if}
 
@@ -54,8 +75,8 @@
 							{forminput}
 								<label>
 									{assign var=is_requirement value=''}
-									{foreach from=$gBitSystem->mRequirements key=req item=reqs}
-										{if $reqs.$name && $gBitSystem->isPackageActive($req) && $package.active_switch eq 'y'}
+									{foreach from=$gBitSystem->mPackagesSchemas key=pkgguid2 item=package2}
+										{if $gBitSystem->isPackageActive($pkgguid2) && $package2.requirements.$name}
 											{assign var=is_requirement value='true'}
 										{/if}
 									{/foreach}
@@ -63,7 +84,7 @@
 										{biticon iname=dialog-ok iexplain="Required"}
 										<input type="hidden" value="y" name="fPackage[{$name}]" id="package_{$name}" />
 									{else}
-										<input type="checkbox" value="y" name="fPackage[{$name}]" id="package_{$name}" {if $package.active_switch eq 'y' }checked="checked"{/if} />
+										<input type="checkbox" value="y" name="fPackage[{$name}]" id="package_{$name}" {if $package.active eq 'y' }checked="checked"{/if} />
 									{/if}
 									&nbsp; <strong>{$name|capitalize}</strong>
 									{assign var=first_loop value=1}
@@ -134,7 +155,7 @@
 		{jstab title="Required"}
 			{legend legend="Required packages installed on your system"}
 				{foreach key=guid item=package from=$gBitSystem->mPackagesSchemas}
-					{if $package.required}
+					{if $package.required && $gBitSystem->isPackageInstalled($guid)}
 						<div class="row">
 							<div class="formlabel">
 								{biticon ipackage=$guid iname="pkg_`$guid`" iexplain=$package.name iforce=icon}
