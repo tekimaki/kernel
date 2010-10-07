@@ -1334,6 +1334,9 @@ class BitSystem extends BitBase {
 		if( empty( $pParamHash['guid'] ) ){
 			$this->mErrors['package'] = tra('A value for guid is required.');
 		}
+		if( empty( $pParamHash['dir'] ) ){
+			$this->fatalError( 'Internal error: Unknown package directory' );
+		}
 
 		$pParamHash['package_store']['version'] = !empty( $pParamHash['version'] )?$pParamHash['version']:'0.0.0';
 		$pParamHash['package_store']['homeable'] = (isset( $pParamHash['homeable'] ) && $pParamHash['homeable'] != TRUE)?'n':'y';
@@ -1341,6 +1344,7 @@ class BitSystem extends BitBase {
 		$pParamHash['package_store']['required'] = (isset( $pParamHash['required'] ) && $pParamHash['required'] != FALSE )?'y':NULL;
 		$pParamHash['package_store']['name'] = !empty( $pParamHash['name'] )?$pParamHash['name']:ucfirst($pParamHash['guid']);
 		$pParamHash['package_store']['description'] = !empty( $pParamHash['description'] )?$pParamHash['description']:NULL;
+		$pParamHash['package_store']['dir'] = $pParamHash['dir'];
 
 		// Use $pParamHash here since it handles validation right
 		// @TODO mod LibertyValidator so it can be used on first install; due to liberty plugin use in LibertyValidator it cant be used by installer on first install
