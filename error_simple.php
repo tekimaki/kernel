@@ -24,6 +24,7 @@
 
 		<?php
 			if (isset($_REQUEST['error']) and !is_null($_REQUEST['error'])) {
+				global $gBitSystem;
 				if( $gBitSystem->isFeatureActive( 'site_closed' )){
 					echo $_REQUEST['error']; 
 				} else {
