@@ -991,7 +991,6 @@ class BitSystem extends BitBase {
 	 * @access public
 	 */
 	function loadPackage( $pPkgDir, $pScanFile, $pOnce=TRUE ) { 
-
 		$this->mRegisterCalled = FALSE;
 		$scanFile = BIT_ROOT_PATH.$pPkgDir.'/'.$pScanFile;
 		$file_exists = 0;
@@ -1128,12 +1127,12 @@ class BitSystem extends BitBase {
 	/**
 	 * loadPackagePluginsSchemas
 	 */
-	function loadPackagePluginSchemas( $pPackageGuid ){
+	function loadPackagePluginSchemas( $pPkgDir, $pPkgGuid ){
 		$ret = array();
-		if( $paths = LibertySystem::getPackagePluginPaths( $pPackageGuid ) ){
-			foreach( $paths as $path ){
-				$ret = array_merge($ret, $this->loadPluginSchemasAtPath( $path ));
-			}
+		$paths[] = BIT_ROOT_PATH.$pPkgDir.'/plugins';
+		$paths[] = CONFIG_PKG_PATH.$pPkgGuid.'/plugins';
+		foreach( $paths as $path ){
+			$ret = array_merge($ret, $this->loadPluginSchemasAtPath( $path ));
 		}
 		return $ret;
 	}
@@ -1240,7 +1239,7 @@ class BitSystem extends BitBase {
 			}
 			// load all plugin schemas for this package
 			if( !$pIsPlugin ){
-				if( $plugin_schemas = $this->loadPackagePluginSchemas( $guid ) ){
+				if( $plugin_schemas = $this->loadPackagePluginSchemas( $pPkgDir, $guid ) ){
 					$pkgHash[$guid]['plugins'] = $plugin_schemas;
 				}
 			}
@@ -1341,7 +1340,7 @@ class BitSystem extends BitBase {
 		$pParamHash['package_store']['version'] = !empty( $pParamHash['version'] )?$pParamHash['version']:'0.0.0';
 		$pParamHash['package_store']['homeable'] = (isset( $pParamHash['homeable'] ) && $pParamHash['homeable'] != TRUE)?'n':'y';
 		$pParamHash['package_store']['active'] = (isset( $pParamHash['active'] ) && ( $pParamHash['active'] != TRUE || $pParamHash['active'] != 'y') )?'n':'y';
-		$pParamHash['package_store']['required'] = (isset( $pParamHash['required'] ) && $pParamHash['required'] != FALSE )?'y':NULL;
+		$pParamHash['package_store']['required'] = (isset( $pParamHash['required'] ) && ( $pParamHash['required'] == TRUE || $pParamHash['required'] == 'y') )?'y':'n';
 		$pParamHash['package_store']['name'] = !empty( $pParamHash['name'] )?$pParamHash['name']:ucfirst($pParamHash['guid']);
 		$pParamHash['package_store']['description'] = !empty( $pParamHash['description'] )?$pParamHash['description']:NULL;
 		$pParamHash['package_store']['dir'] = $pParamHash['dir'];
@@ -2002,7 +2001,9 @@ class BitSystem extends BitBase {
 				$gBitSystem->storeConfig( "bitweaver_version", $pVersion, 'kernel' );
 				$ret = TRUE;
 			} elseif( !empty( $gBitSystem->mPackages[$pPackage] )) {
-				$gBitSystem->storeConfig( "package_".$pPackage."_version", $pVersion, $pPackage );
+				$config = $this->getPackageConfig( $pPackage );
+				$config['version'] = $pVersion; 
+				$this->storePackage( $config );
 				$ret = TRUE;
 			}
 		}
@@ -2624,6 +2625,52 @@ class BitSystem extends BitBase {
 			}
 		}
 		return $ret;
+	}
+
+
+	/**
+	 * upgradeKernel
+	 *
+	 * when kernel has update requirements it often needs to be forced
+	 * this method processes those requirements
+	 */
+	function upgradeKernel(){
+		if( is_file( INSTALL_PKG_PATH.'BitInstaller.php' ) && is_readable( INSTALL_PKG_PATH.'BitInstaller.php' ) ){
+			if( $this->getConfig( 'package_kernel' ) ){
+				if( version_compare( $this->getConfig( 'package_kernel_version' ), '2.1.0', "<" ) ) {
+					define( 'AUTO_UPDATE_KERNEL', TRUE );
+					include_once( INSTALL_PKG_PATH.'BitInstaller.php' );
+					global $gBitInstaller;
+					$gBitInstaller = new BitInstaller();
+
+					$dir = KERNEL_PKG_PATH.'admin/upgrades/';
+					$upDir = opendir( $dir );
+					while( FALSE !== ( $file = readdir( $upDir ))) {
+						if( is_file( $dir.$file )) {
+							$upVersion = str_replace( ".php", "", $file );
+							// we only want to load files of versions that are greater than is installed
+							if( $gBitInstaller->validateVersion( $upVersion ) && version_compare( $gBitInstaller->getVersion( 'kernel' ), $upVersion, '<' )) {
+								include_once( $dir.$file );
+							}
+						}
+					}
+
+					if( $errors = $gBitInstaller->upgradePackageVersions('kernel') ){
+						// upgrade successful - continue
+						error_log( 'Auto Kernel Upgrade: '.implode( $errors ) );
+					}else{
+						// yay!
+						return;
+					}
+				}
+			}
+		}
+
+		// if something went wrong fatal
+		// fatal if installer is not available
+		$_REQUEST['error'] = tra('The website is closed while critical updates are installed' );
+		include( KERNEL_PKG_PATH . 'error_simple.php' );
+		exit;
 	}
 }
 
