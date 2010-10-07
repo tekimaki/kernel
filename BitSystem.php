@@ -1092,6 +1092,7 @@ class BitSystem extends BitBase {
 	/**
 	 *
 	 */
+	/*
 	function getPackagesPluginsSchemas( $pForce = FALSE ){
 		$ret = array();
 		if( empty( $this->mPackagesSchemas ) || $pForce ){
@@ -1115,20 +1116,21 @@ class BitSystem extends BitBase {
 			
 			// load the list of pkgs in the right order
 			foreach( $loadPkgs as $loadPkg ) {
-				if( $schema = $this->loadPackagePluginSchema( $loadPkg ) ){
+				if( $schema = $this->loadPackagePluginSchemas( $loadPkg ) ){
 					$this->mPackagesSchemas[$loadPkg]['plugins'] = $schema;
 				}
 			}
 		}
 		return $this->mPackagesSchemas;
 	}
+	 */
 
 	/**
-	 * loadPackagePluginsSchema
+	 * loadPackagePluginsSchemas
 	 */
-	function loadPackagePluginSchema( $pPackageName ){
+	function loadPackagePluginSchemas( $pPackageGuid ){
 		$ret = array();
-		if( $paths = LibertySystem::getPackagePluginPaths( $pPackageName ) ){
+		if( $paths = LibertySystem::getPackagePluginPaths( $pPackageGuid ) ){
 			foreach( $paths as $path ){
 				$ret = array_merge($ret, $this->loadPluginSchemasAtPath( $path ));
 			}
@@ -1163,7 +1165,6 @@ class BitSystem extends BitBase {
 	 */
 	function loadPackagesSchemas(){
 		$this->getPackagesSchemas( TRUE );
-		$this->getPackagesPluginsSchemas( TRUE );
 
 		// @TODO Deprecate this too - issue is in install pkg where it tries to reconcile permissions issues
 		foreach( $this->mPackagesSchemas as $package=>$pkgHash ){
@@ -1200,6 +1201,7 @@ class BitSystem extends BitBase {
 
 			// load the list of pkgs in the right order
 			foreach( $loadPkgs as $loadPkg ) {
+				// load the package schema
 				if( $schema = $this->loadPackageSchema( $loadPkg ) ){
 					$ret = array_merge( $ret, $schema );
 				}
@@ -1223,16 +1225,26 @@ class BitSystem extends BitBase {
 			$pkgHash = Spyc::YAMLLoad( $scanFile );
 			// modify the hash a little
 			$keys = array_keys( $pkgHash ); // get the package guid 
+			$guid = $keys[0];
 			if (!$pIsPlugin) {
+			  // assign the dir
+			  $pkgHash[$guid]['dir'] = $pPkgDir;
 			  // assign the guid
-			  $pkgHash[$keys[0]]['guid'] = $keys[0];
+			  $pkgHash[$guid]['guid'] = $guid;
 			  // assign the path
-			  $pkgHash[$keys[0]]['path'] = BIT_ROOT_PATH.$pPkgDir.'/';
+			  $pkgHash[$guid]['path'] = BIT_ROOT_PATH.$pPkgDir.'/';
 			}
 			// assign a name if none set
-			if( empty( $pkgHash[$keys[0]]['name'] ) ){
-				$pkgHash[$keys[0]]['name'] = ucfirst( $keys[0] );
+			if( empty( $pkgHash[$guid]['name'] ) ){
+				$pkgHash[$guid]['name'] = ucfirst( $guid );
 			}
+			// load all plugin schemas for this package
+			if( !$pIsPlugin ){
+				if( $plugin_schemas = $this->loadPackagePluginSchemas( $guid ) ){
+					$pkgHash[$guid]['plugins'] = $plugin_schemas;
+				}
+			}
+
 			return $pkgHash;
 		}
 
