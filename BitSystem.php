@@ -1,4 +1,4 @@
-<?php
+<?php /* -*- Mode: php; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4; -*- */
 /**
  * Main bitweaver systems functions
  *
@@ -1088,6 +1088,73 @@ class BitSystem extends BitBase {
 
 
 	// {{{=========================== Schema Getters ==============================
+
+	/**
+	 *
+	 */
+	function getPackagesPluginsSchemas( $pForce = FALSE ){
+		$ret = array();
+		if( empty( $this->mPackagesSchemas ) || $pForce ){
+			// gPreScan may hold a list of packages that must be loaded first
+			global $gPreScan;
+			if( !empty( $gPreScan ) && is_array( $gPreScan )) {
+				foreach( $gPreScan as $pkgDir ) {
+					$loadPkgs[] = $pkgDir;
+				}
+			}
+			
+			// load lib configs
+			if( $pkgDir = opendir( BIT_ROOT_PATH )) {
+				while( FALSE !== ( $dirName = readdir( $pkgDir ))) {
+					if( $dirName != '..'  && $dirName != '.' && is_dir( BIT_ROOT_PATH . '/' . $dirName ) && $dirName != 'CVS' && preg_match( '/^\w/', $dirName )) {
+						$loadPkgs[] = $dirName;
+					}
+				}
+			}
+			$loadPkgs = array_unique( $loadPkgs );
+			
+			// load the list of pkgs in the right order
+			foreach( $loadPkgs as $loadPkg ) {
+				if( $schema = $this->loadPackagePluginSchema( $loadPkg ) ){
+					$this->mPackagesSchemas[$loadPkg]['plugins'] = $schema;
+				}
+			}
+		}
+		return $this->mPackagesSchemas;
+	}
+
+	/**
+	 * loadPackagePluginsSchema
+	 */
+	function loadPackagePluginSchema( $pPackageName ){
+		$ret = array();
+		if( $paths = LibertySystem::getPackagePluginPaths( $pPackageName ) ){
+			foreach( $paths as $path ){
+				$ret = array_merge($ret, $this->loadPluginSchemasAtPath( $path ));
+			}
+		}
+		return $ret;
+	}
+
+	/**
+	 * loadPluginSchemasAtPath
+	 * @see BitInstaller::loadPackagePluginSchemas
+	 */
+	function loadPluginSchemasAtPath( $pPluginsPath ){
+		$ret = array();
+		if( is_dir( $pPluginsPath ) && $plugins = opendir( $pPluginsPath )) {
+			while( FALSE !== ( $pluginDirName = readdir( $plugins ) ) ) {
+				if ($pluginDirName != '.' && $pluginDirName != '..') {
+					$pluginDirPath = $pPluginsPath.'/'.$pluginDirName;
+					if( is_dir( $pluginDirPath ) && is_file( $pluginDirPath.'/schema.yaml' ) ) {
+						$schema =  $this->loadPackageSchema($pluginDirPath, TRUE);
+						$ret = array_merge($ret, $schema);
+					}
+				}
+			}
+		}
+		return $ret;
+	}
 	
 	/**
 	 * loadPackagesSchemas
@@ -1096,6 +1163,7 @@ class BitSystem extends BitBase {
 	 */
 	function loadPackagesSchemas(){
 		$this->getPackagesSchemas( TRUE );
+		$this->getPackagesPluginsSchemas( TRUE );
 
 		// @TODO Deprecate this too - issue is in install pkg where it tries to reconcile permissions issues
 		foreach( $this->mPackagesSchemas as $package=>$pkgHash ){
@@ -1143,18 +1211,24 @@ class BitSystem extends BitBase {
 		return $this->mPackagesSchemas;
 	}
 
-	function loadPackageSchema( $pPkgDir ){
+	function loadPackageSchema( $pPkgDir, $pIsPlugin = FALSE ){
 		require_once( UTIL_PKG_PATH.'spyc/spyc.php' );
 
-		$scanFile = BIT_ROOT_PATH.$pPkgDir.'/admin/schema.yaml';
+		if ($pIsPlugin) {
+		  $scanFile = $pPkgDir.'/schema.yaml';
+		} else {
+		  $scanFile = BIT_ROOT_PATH.$pPkgDir.'/admin/schema.yaml';
+		}
 		if( file_exists( $scanFile ) ) {
 			$pkgHash = Spyc::YAMLLoad( $scanFile );
 			// modify the hash a little
 			$keys = array_keys( $pkgHash ); // get the package guid 
-			// assign the guid
-			$pkgHash[$keys[0]]['guid'] = $keys[0];
-			// assign the path
-			$pkgHash[$keys[0]]['path'] = BIT_ROOT_PATH.$pPkgDir.'/';
+			if (!$pIsPlugin) {
+			  // assign the guid
+			  $pkgHash[$keys[0]]['guid'] = $keys[0];
+			  // assign the path
+			  $pkgHash[$keys[0]]['path'] = BIT_ROOT_PATH.$pPkgDir.'/';
+			}
 			// assign a name if none set
 			if( empty( $pkgHash[$keys[0]]['name'] ) ){
 				$pkgHash[$keys[0]]['name'] = ucfirst( $keys[0] );
