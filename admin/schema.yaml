@@ -54,6 +54,7 @@ kernel:
       homeable C(1) NOTNULL DEFAULT 'y',
       active C(1) DEFAULT NULL,
       required C(1) DEFAULT NULL,
+      dir C(64) NOTNULL,
       name C(64),
       description C(250)
       
