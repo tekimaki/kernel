@@ -19,6 +19,7 @@ array( 'DATADICT' => array(
 		  version C(16) NOTNULL DEFAULT '0.0.0',
 		  homeable C(1) NOTNULL DEFAULT 'y',
 		  active C(1) DEFAULT NULL,
+		  required C(1) DEFAULT NULL,
 		  dir C(64) NOTNULL,
 		  name C(64),
 		  description C(250)
