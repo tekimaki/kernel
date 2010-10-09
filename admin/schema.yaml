@@ -57,6 +57,17 @@ kernel:
       dir C(64) NOTNULL,
       name C(64),
       description C(250)
+
+    package_plugins: |
+
+      guid C(64) PRIMARY,
+      package_guid C(64) PRIMARY,
+      version C(16) NOTNULL DEFAULT '0.0.0',
+      active C(1) DEFAULT NULL,
+      name C(64),
+      description C(250)
+      CONSTRAINT '
+      , CONSTRAINT `package_guid_ref` FOREIGN KEY (`package_guid`) REFERENCES `packages`( `guid` )'
       
   preferences: 
     site_online_help: y

@@ -59,6 +59,9 @@ class BitSystem extends BitBase {
 	// Installed Packages
 	var $mPackagesConfig = array();
 
+	// Installed Package Plugins
+	var $mPackagePluginsConfig = array();
+
 	// Cross Reference Package Directory Name => Package Key used as index into $mPackages
 	var $mPackagesDirNameXref = array();
 
@@ -612,6 +615,17 @@ class BitSystem extends BitBase {
 	 */
 	function isPackageInstalled( $pPackageGuid ){
 		return !is_null( $this->getPackageConfig( $pPackageGuid ) );
+	}
+
+	// === isPluginInstalled
+	/**
+	 * check's if a package plugin is Installed
+	 * @param $pPackagePluginGuid the guid of the package to test
+	 * @return boolean
+	 * @access public
+	 */
+	function isPluginInstalled( $pPackagePluginGuid ){
+		return !is_null( $this->getPluginConfig( $pPackagePluginGuid ) );
 	}
 
 	// === isPackageRequired
@@ -1294,6 +1308,18 @@ class BitSystem extends BitBase {
 		return !empty( $this->mPackagesConfig[$pPackage] )?$this->mPackagesConfig[$pPackage]:NULL;
 	}
 
+	function getPluginConfig( $pPackagePlugin, $pForce = FALSE ){
+		if( empty( $this->mPackagePluginsConfig[$pPackagePlugin] ) || $pForce ){
+			$query = "SELECT * FROM `".BIT_DB_PREFIX."package_plugins` WHERE guid = ?";
+			if( $result = $this->mDb->query( $query, array( $pPackagePlugin ) ) ){
+				if( $row = $result->fetchRow() ){
+					$this->mPackagePluginsConfig[$pPackagePlugin] = $row;
+				}
+			}
+		}
+		return !empty( $this->mPackagePluginsConfig[$pPackagePlugin] )? $this->mPackagePluginsConfig[$pPackagePlugin]:NULL;
+	}
+
 	function getPackageConfigValue( $pPackage, $pProperty ){
 		if( empty( $this->mPackagesConfig[$pPackage] ) ){
 			$this->getPackageConfig( $pPackage, TRUE );
@@ -1446,6 +1472,155 @@ class BitSystem extends BitBase {
 			$storeHash = $this->getPackageConfig( $pPackageGuid );
 			$storeHash['active'] = 'n';
 			$this->storePackage( $storeHash );
+		}
+		return( count( $this->mErrors )== 0 );
+	}
+
+	/// }}}
+
+	// {{{=========================== Plugin Storage Methods ==============================
+
+	/**
+	 * stores/updates a single record in the plugin table
+	 */
+	function storePlugin( &$pParamHash, $gAutoReload = TRUE ){
+		if( $this->verifyPluginHash( $pParamHash ) ) {
+			if ( !empty( $pParamHash['plugin_store'] )){
+				$table = 'package_plugins';
+				if( !$this->isPluginInstalled( $pParamHash['guid'] ) ){
+					$pParamHash['plugin_store']['guid'] = $pParamHash['guid'];
+					$result = $this->mDb->associateInsert( $table, $pParamHash['plugin_store'] );
+				}else{
+					$locId = array( "guid" => $pParamHash['guid'] );
+					$result = $this->mDb->associateUpdate( $table, $pParamHash['plugin_store'], $locId );
+				}
+				$this->getPluginConfig( $pParamHash['guid'], TRUE );
+			}
+		}
+		return count( $this->mErrors ) == 0;
+	}
+
+	/** 
+	 * verifies a data set for storage in the kernel2_Plugin table
+	 * data is put into $pParamHash['plugin_store'] for storage
+	 */
+	function verifyPluginHash( &$pParamHash ){
+		if( empty( $pParamHash['guid'] ) ){
+			$this->mErrors['plugin'] = tra('A value for guid is required.');
+		}
+
+		if( empty( $pParamHash['package_guid'] ) ){
+			$this->mErrors['plugin'] = tra('A value for package_guid is required.');
+		}
+
+		$pParamHash['plugin_store']['guid'] = $pParamHash['guid'];
+		$pParamHash['plugin_store']['package_guid'] = $pParamHash['package_guid'];
+		$pParamHash['plugin_store']['version'] = !empty( $pParamHash['version'] )?$pParamHash['version']:'0.0.0';
+		$pParamHash['plugin_store']['active'] = (isset( $pParamHash['active'] ) && ( $pParamHash['active'] != TRUE || $pParamHash['active'] != 'y') )?'n':'y';
+		$pParamHash['plugin_store']['name'] = !empty( $pParamHash['name'] )?$pParamHash['name']:ucfirst($pParamHash['guid']);
+		$pParamHash['plugin_store']['description'] = !empty( $pParamHash['description'] )?$pParamHash['description']:NULL;
+
+		// Use $pParamHash here since it handles validation right
+		// @TODO mod LibertyValidator so it can be used on first install; due to liberty plugin use in LibertyValidator it cant be used by installer on first install
+		// $this->validatePluginFields($pParamHash);
+		return( count( $this->mErrors )== 0 );
+	}
+
+
+	function expungePlugin( &$pPluginGuid ){
+		$ret = FALSE;
+
+		$query = "DELETE FROM `package_plugins` WHERE `guid` = ?";
+		if( $this->mDb->query( $query, array($pPluginGuid) ) ){
+			$ret = TRUE;
+		}
+
+		return $ret;
+	}
+
+
+	/**
+	 * previewPluginFields prepares the fields in this type for preview
+	 */
+	 function previewPluginFields(&$pParamHash) {
+		require_once( LIBERTY_PKG_PATH.'LibertyValidator.php' );
+		$this->prepPluginVerify();
+		LibertyValidator::preview(
+			$this->mVerification['plugin_store'],
+			$pParamHash,
+			$pParamHash['plugin_store']);
+	}
+
+
+	/**
+	 * validatePluginFields validates the fields in this type
+	 */
+	function validatePluginFields(&$pParamHash) {
+		require_once( LIBERTY_PKG_PATH.'LibertyValidator.php' );
+		$this->prepPluginVerify();
+		LibertyValidator::validate(
+			$this->mVerification['plugin_store'],
+			$pParamHash,
+			$this, $pParamHash['plugin_store']);
+	}
+
+	/**
+	 * prepPluginVerify prepares the object for input verification
+	 */
+	function prepPluginVerify() {
+		if (empty($this->mVerification['plugin_store'])) {
+
+	 		/* Validation for guid */
+			/*
+			$this->mVerification['plugin_store']['string']['guid'] = array(
+				'name' => 'Plugin Guid',
+				'required' => '1'
+			);
+			*/
+	 		/* Validation for version */
+			$this->mVerification['plugin_store']['string']['version'] = array(
+				'name' => 'Version',
+				'required' => '1',
+				'default' => '0.0.0'
+			);
+	 		/* Validation for homable */
+			$this->mVerification['plugin_store']['boolean']['homable'] = array(
+				'name' => 'Is Homable',
+				'required' => '1',
+				'default' => 'y'
+			);
+	 		/* Validation for active */
+			$this->mVerification['plugin_store']['boolean']['active'] = array(
+				'name' => 'Is Active',
+				'required' => '1',
+				'default' => 'n'
+			);
+	 		/* Validation for name */
+			$this->mVerification['plugin_store']['string']['name'] = array(
+				'name' => 'Name',
+			);
+	 		/* Validation for description */
+			$this->mVerification['plugin_store']['string']['description'] = array(
+				'name' => 'Description',
+			);
+
+		}
+	}
+
+	function activatePlugin( $pPluginGuid ){
+		if( $this->isPluginInstalled( $pPluginGuid ) ){
+			$storeHash = $this->getPluginConfig( $pPluginGuid );
+			$storeHash['active'] = 'y';
+			$this->storePlugin( $storeHash );
+		}
+		return( count( $this->mErrors )== 0 );
+	}
+
+	function deactivatePlugin( $pPluginGuid ){
+		if( $this->isPluginInstalled( $pPluginGuid ) ){
+			$storeHash = $this->getPluginConfig( $pPluginGuid );
+			$storeHash['active'] = 'n';
+			$this->storePlugin( $storeHash );
 		}
 		return( count( $this->mErrors )== 0 );
 	}
