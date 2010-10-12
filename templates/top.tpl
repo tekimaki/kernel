@@ -11,13 +11,12 @@
 			{/if}
 		{/if}
 
-		<br />
-
 		{if $gBitSystem->isFeatureActive( 'feature_calendar' ) and $gBitUser->hasPermission( 'p_calendar_view' )}
+			<br />
 			<a href="{$smarty.const.CALENDAR_PKG_URL}index.php">{$smarty.now|bit_short_datetime}</a>
 		{/if}
 	</div>
-	<h1><a href="{$smarty.const.BIT_ROOT_URL}">{$gBitSystem->getConfig('site_title')}</a></h1>
+	<h1 class="clear"><a href="{$smarty.const.BIT_ROOT_URL}">{$gBitSystem->getConfig('site_title')}</a></h1>
 	{if $gBitSystem->getConfig('site_slogan')}
 	<h3>{$gBitSystem->getConfig('site_slogan')}</h3>
 	{/if}
