@@ -1288,7 +1288,7 @@ class BitSystem extends BitBase {
 
 	function getPackagesConfig( $pForce = FALSE ){
 		if( empty( $this->mPackagesConfig ) || $pForce ){
-			$query = "SELECT guid as key, * FROM `".BIT_DB_PREFIX."packages`";
+			$query = "SELECT guid as guid_key, guid, version, homeable, active, required, dir, name, description FROM `".BIT_DB_PREFIX."packages` p";
 			if( $result = $this->mDb->getAssoc( $query ) ){
 				$this->mPackagesConfig = &$result;
 			}
