@@ -15,8 +15,8 @@ if( !empty( $_REQUEST['features'] ) ) {
 		if( !empty( $pkg['guid'] )) {
 			$pkgName = strtolower( $pkg['guid'] );
 			// can only change already installed packages that are not required
-			if( $gBitSystem->isPackageInstalled( $pkgName ) && empty( $pkg['required'] )) {
-				if( isset( $_REQUEST['fPackage'][$pkgName] )) {
+			if( $gBitSystem->isPackageInstalled( $pkgName ) && $pkg['required'] != 'y' ) {
+				if( !empty( $_REQUEST['fPackage'][$pkgName] )) {
 					// mark installed and active
 					$gBitSystem->activatePackage( $pkgName );
 				} else {
