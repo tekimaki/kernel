@@ -1,4 +1,4 @@
-<div id="bittop">
+<div id="bittop" class="clear">
 	<div class="floatright alignright">
 		{if $gBitUser->isRegistered()}
 			{tr}Welcome{/tr}, <strong>{displayname hash=$gBitUser->mInfo}</strong> 
@@ -16,7 +16,7 @@
 			<a href="{$smarty.const.CALENDAR_PKG_URL}index.php">{$smarty.now|bit_short_datetime}</a>
 		{/if}
 	</div>
-	<h1 class="clear"><a href="{$smarty.const.BIT_ROOT_URL}">{$gBitSystem->getConfig('site_title')}</a></h1>
+	<h1><a href="{$smarty.const.BIT_ROOT_URL}">{$gBitSystem->getConfig('site_title')}</a></h1>
 	{if $gBitSystem->getConfig('site_slogan')}
 	<h3>{$gBitSystem->getConfig('site_slogan')}</h3>
 	{/if}
