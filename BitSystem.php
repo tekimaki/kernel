@@ -1371,9 +1371,6 @@ class BitSystem extends BitBase {
 		$pParamHash['package_store']['description'] = !empty( $pParamHash['description'] )?$pParamHash['description']:NULL;
 		$pParamHash['package_store']['dir'] = $pParamHash['dir'];
 
-		// Use $pParamHash here since it handles validation right
-		// @TODO mod LibertyValidator so it can be used on first install; due to liberty plugin use in LibertyValidator it cant be used by installer on first install
-		// $this->validatePackageFields($pParamHash);
 		return( count( $this->mErrors )== 0 );
 	}
 
@@ -1387,75 +1384,6 @@ class BitSystem extends BitBase {
 		}
 
 		return $ret;
-	}
-
-
-	/**
-	 * previewPackageFields prepares the fields in this type for preview
-	 */
-	 function previewPackageFields(&$pParamHash) {
-		require_once( LIBERTY_PKG_PATH.'LibertyValidator.php' );
-		$this->prepPackageVerify();
-		LibertyValidator::preview(
-			$this->mVerification['package_store'],
-			$pParamHash,
-			$pParamHash['package_store']);
-	}
-
-
-	/**
-	 * validatePackageFields validates the fields in this type
-	 */
-	function validatePackageFields(&$pParamHash) {
-		require_once( LIBERTY_PKG_PATH.'LibertyValidator.php' );
-		$this->prepPackageVerify();
-		LibertyValidator::validate(
-			$this->mVerification['package_store'],
-			$pParamHash,
-			$this, $pParamHash['package_store']);
-	}
-
-	/**
-	 * prepPackageVerify prepares the object for input verification
-	 */
-	function prepPackageVerify() {
-		if (empty($this->mVerification['package_store'])) {
-
-	 		/* Validation for guid */
-			/*
-			$this->mVerification['package_store']['string']['guid'] = array(
-				'name' => 'Package Guid',
-				'required' => '1'
-			);
-			*/
-	 		/* Validation for version */
-			$this->mVerification['package_store']['string']['version'] = array(
-				'name' => 'Version',
-				'required' => '1',
-				'default' => '0.0.0'
-			);
-	 		/* Validation for homable */
-			$this->mVerification['package_store']['boolean']['homable'] = array(
-				'name' => 'Is Homable',
-				'required' => '1',
-				'default' => 'y'
-			);
-	 		/* Validation for active */
-			$this->mVerification['package_store']['boolean']['active'] = array(
-				'name' => 'Is Active',
-				'required' => '1',
-				'default' => 'n'
-			);
-	 		/* Validation for name */
-			$this->mVerification['package_store']['string']['name'] = array(
-				'name' => 'Name',
-			);
-	 		/* Validation for description */
-			$this->mVerification['package_store']['string']['description'] = array(
-				'name' => 'Description',
-			);
-
-		}
 	}
 
 	function activatePackage( $pPackageGuid ){
@@ -1520,12 +1448,8 @@ class BitSystem extends BitBase {
 		$pParamHash['plugin_store']['name'] = !empty( $pParamHash['name'] )?$pParamHash['name']:ucfirst($pParamHash['guid']);
 		$pParamHash['plugin_store']['description'] = !empty( $pParamHash['description'] )?$pParamHash['description']:NULL;
 
-		// Use $pParamHash here since it handles validation right
-		// @TODO mod LibertyValidator so it can be used on first install; due to liberty plugin use in LibertyValidator it cant be used by installer on first install
-		// $this->validatePluginFields($pParamHash);
 		return( count( $this->mErrors )== 0 );
 	}
-
 
 	function expungePlugin( &$pPluginGuid ){
 		$ret = FALSE;
@@ -1536,75 +1460,6 @@ class BitSystem extends BitBase {
 		}
 
 		return $ret;
-	}
-
-
-	/**
-	 * previewPluginFields prepares the fields in this type for preview
-	 */
-	 function previewPluginFields(&$pParamHash) {
-		require_once( LIBERTY_PKG_PATH.'LibertyValidator.php' );
-		$this->prepPluginVerify();
-		LibertyValidator::preview(
-			$this->mVerification['plugin_store'],
-			$pParamHash,
-			$pParamHash['plugin_store']);
-	}
-
-
-	/**
-	 * validatePluginFields validates the fields in this type
-	 */
-	function validatePluginFields(&$pParamHash) {
-		require_once( LIBERTY_PKG_PATH.'LibertyValidator.php' );
-		$this->prepPluginVerify();
-		LibertyValidator::validate(
-			$this->mVerification['plugin_store'],
-			$pParamHash,
-			$this, $pParamHash['plugin_store']);
-	}
-
-	/**
-	 * prepPluginVerify prepares the object for input verification
-	 */
-	function prepPluginVerify() {
-		if (empty($this->mVerification['plugin_store'])) {
-
-	 		/* Validation for guid */
-			/*
-			$this->mVerification['plugin_store']['string']['guid'] = array(
-				'name' => 'Plugin Guid',
-				'required' => '1'
-			);
-			*/
-	 		/* Validation for version */
-			$this->mVerification['plugin_store']['string']['version'] = array(
-				'name' => 'Version',
-				'required' => '1',
-				'default' => '0.0.0'
-			);
-	 		/* Validation for homable */
-			$this->mVerification['plugin_store']['boolean']['homable'] = array(
-				'name' => 'Is Homable',
-				'required' => '1',
-				'default' => 'y'
-			);
-	 		/* Validation for active */
-			$this->mVerification['plugin_store']['boolean']['active'] = array(
-				'name' => 'Is Active',
-				'required' => '1',
-				'default' => 'n'
-			);
-	 		/* Validation for name */
-			$this->mVerification['plugin_store']['string']['name'] = array(
-				'name' => 'Name',
-			);
-	 		/* Validation for description */
-			$this->mVerification['plugin_store']['string']['description'] = array(
-				'name' => 'Description',
-			);
-
-		}
 	}
 
 	function activatePlugin( $pPluginGuid ){
