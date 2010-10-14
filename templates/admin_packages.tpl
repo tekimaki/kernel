@@ -297,6 +297,7 @@
 								{biticon ipackage=$guid iname="pkg_`$guid`" iexplain=$package.name iforce=icon}
 							</div>
 							{forminput}
+								<strong>{$package.name|capitalize}</strong>
 								{include file="bitpackage:kernel/package_help_inc.tpl" package=$gBitSystem->mPackagesSchemas.$guid}
 							{/forminput}
 						</div>
