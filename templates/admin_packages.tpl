@@ -65,36 +65,36 @@
 
 				{$install_unavailable}
 
-				{foreach key=name item=package from=$gBitSystem->mPackagesConfig}
-					{if !$package.required}
+				{foreach key=guid item=package from=$gBitSystem->mPackagesConfig}
+					{if !$gBitSystem->mPackagesSchemas.$guid.required}
 						<div class="row">
 							<div class="formlabel">
-								<label for="package_{$name}">{biticon ipackage=$name iname="pkg_`$name`" iexplain="$name" iforce=icon}</label>
+								<label for="package_{$guid}">{biticon ipackage=$guid iname="pkg_`$guid`" iexplain="$package.name" iforce=icon}</label>
 							</div>
 							{forminput}
 								<label>
 									{assign var=is_requirement value=''}
 									{foreach from=$gBitSystem->mPackagesSchemas key=pkgguid2 item=package2}
-										{if $gBitSystem->isPackageActive($pkgguid2) && $package2.requirements.$name}
+										{if $gBitSystem->isPackageActive($pkgguid2) && $package2.requirements.$guid}
 											{assign var=is_requirement value='true'}
 										{/if}
 									{/foreach}
 									{if $is_requirement}
 										{biticon iname=dialog-ok iexplain="Required"}
-										<input type="hidden" value="y" name="fPackage[{$name}]" id="package_{$name}" />
+										<input type="hidden" value="y" name="fPackage[{$guid}]" id="package_{$guid}" />
 									{else}
-										<input type="checkbox" value="y" name="fPackage[{$name}]" id="package_{$name}" {if $package.active eq 'y' }checked="checked"{/if} />
+										<input type="checkbox" value="y" name="fPackage[{$guid}]" id="package_{$guid}" {if $package.active eq 'y' }checked="checked"{/if} />
 									{/if}
-									&nbsp; <strong>{$name|capitalize}</strong>
+									&nbsp; <strong>{$package.name|capitalize}</strong>
 									{assign var=first_loop value=1}
 									{foreach from=$gBitSystem->mRequirements key=required_by item=reqs}
-										{if $reqs.$name}
+										{if $reqs.$guid}
 											{if $first_loop}<br />{biticon iname=dialog-warning iexplain="Requirement"} Required by {else}, {/if}{$required_by}
 											{assign var=first_loop value=0}
 										{/if}
 									{/foreach}
 								</label>
-								{include file="bitpackage:kernel/package_help_inc.tpl" package=$gBitSystem->mPackagesSchemas.$name}
+								{include file="bitpackage:kernel/package_help_inc.tpl" package=$gBitSystem->mPackagesSchemas.$guid}
 							{/forminput}
 						</div>
 					{/if}
