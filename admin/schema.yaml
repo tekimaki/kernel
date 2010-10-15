@@ -11,8 +11,7 @@ kernel:
       min: 2.0.0
     languages: 
       min: 2.0.0
-  description: >
-    This is the heart of the application. Without this --&gt; nothing.
+  description: The kernel manages configuraiton and operation of the cms
   license: 
     name: LGPL
     description: Licensed under the GNU LESSER GENERAL PUBLIC LICENSE.
@@ -61,13 +60,27 @@ kernel:
     package_plugins: |
 
       guid C(64) PRIMARY,
-      package_guid C(64) PRIMARY,
+      package_guid C(64) NOTNULL,
       version C(16) NOTNULL DEFAULT '0.0.0',
       active C(1) DEFAULT NULL,
+      path_type C(64) NOTNULL,
       name C(64),
       description C(250)
       CONSTRAINT '
       , CONSTRAINT `package_guid_ref` FOREIGN KEY (`package_guid`) REFERENCES `packages`( `guid` )'
+
+    package_plugins_api_hooks: |
+      api_hook C(64) PRIMARY,
+      api_type C(64) PRIMARY
+
+    package_plugins_api_map: |
+      plugin_guid C(64) PRIMARY,
+      api_hook C(64) PRIMARY,
+      api_type C(64) PRIMARY,
+      plugin_handler C(64) NOTNULL
+      CONSTRAINT '
+      , CONSTRAINT `plugin_guid_ref` FOREIGN KEY (`plugin_guid`) REFERENCES `package_plugins`( `guid` )
+      , CONSTRAINT `plugin_api_hook_ref` FOREIGN KEY (`api_hook`) REFERENCES `package_plugins_api_hooks`( `api_hook` )'
       
   preferences: 
     site_online_help: y

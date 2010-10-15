@@ -1162,7 +1162,10 @@ class BitSystem extends BitBase {
 				if ($pluginDirName != '.' && $pluginDirName != '..') {
 					$pluginDirPath = $pPluginsPath.'/'.$pluginDirName;
 					if( is_dir( $pluginDirPath ) && is_file( $pluginDirPath.'/schema.yaml' ) ) {
+						$str = '#^'.addslashes( CONFIG_PKG_PATH ).'#';
+						preg_match( $str, $pPluginsPath, $matches );
 						$schema =  $this->loadPackageSchema($pluginDirPath, TRUE);
+						$scheme['path_type'] = !empty( $matches )?'config':'package'; // keep track of where we found it to reduce scanning
 						$ret = array_merge($ret, $schema);
 					}
 				}
@@ -1337,7 +1340,7 @@ class BitSystem extends BitBase {
 	function storePackage( &$pParamHash, $gAutoReload = TRUE ){
 		if( $this->verifyPackageHash( $pParamHash ) ) {
 			if ( !empty( $pParamHash['package_store'] )){
-				$table = 'packages';
+				$table = BIT_DB_PREFIX.'packages';
 				if( !$this->isPackageInstalled( $pParamHash['guid'] ) ){
 					$pParamHash['package_store']['guid'] = $pParamHash['guid'];
 					$result = $this->mDb->associateInsert( $table, $pParamHash['package_store'] );
@@ -1434,11 +1437,15 @@ class BitSystem extends BitBase {
 	 */
 	function verifyPluginHash( &$pParamHash ){
 		if( empty( $pParamHash['guid'] ) ){
-			$this->mErrors['plugin'] = tra('A value for guid is required.');
+			$this->mErrors['plugin']['guid'] = tra('A value for guid is required.');
 		}
 
 		if( empty( $pParamHash['package_guid'] ) ){
-			$this->mErrors['plugin'] = tra('A value for package_guid is required.');
+			$this->mErrors['plugin']['package_guid'] = tra('A value for package_guid is required.');
+		}
+
+		if( empty( $pParamHash['path_type'] ) ){
+			$this->mErrors['plugin']['path_type'] = tra('Unknown path for plugin something is very wrong in BitSystem.');
 		}
 
 		$pParamHash['plugin_store']['guid'] = $pParamHash['guid'];
@@ -1447,6 +1454,7 @@ class BitSystem extends BitBase {
 		$pParamHash['plugin_store']['active'] = (isset( $pParamHash['active'] ) && ( $pParamHash['active'] != TRUE || $pParamHash['active'] != 'y') )?'n':'y';
 		$pParamHash['plugin_store']['name'] = !empty( $pParamHash['name'] )?$pParamHash['name']:ucfirst($pParamHash['guid']);
 		$pParamHash['plugin_store']['description'] = !empty( $pParamHash['description'] )?$pParamHash['description']:NULL;
+		$pParamHash['plugin_store']['path_type'] = $pParamHash['path_type'];
 
 		return( count( $this->mErrors )== 0 );
 	}
@@ -1454,7 +1462,7 @@ class BitSystem extends BitBase {
 	function expungePlugin( &$pPluginGuid ){
 		$ret = FALSE;
 
-		$query = "DELETE FROM `package_plugins` WHERE `guid` = ?";
+		$query = "DELETE FROM `".BIT_DB_PREFIX."package_plugins` WHERE `guid` = ?";
 		if( $this->mDb->query( $query, array($pPluginGuid) ) ){
 			$ret = TRUE;
 		}
@@ -1482,6 +1490,25 @@ class BitSystem extends BitBase {
 
 	/// }}}
 	
+	// {{{=========================== Plugin API Methods ==============================
+
+	function storePluginAPI( $pAPIHookType, $pAPIHookGuid ){
+		$table = BIT_DB_PREFIX.'package_plugins_api_hooks';
+		// expunge before insert in case two packages try to declare the same hook
+		$this->expungePluginAPI( $pAPIHookType, $pAPIHookGuid );
+		$this->mDb->associateInsert( $table, array( 'api_type' => $pAPIHookType, 'api_hook' => $pAPIHookGuid ));
+	}
+
+	function expungePluginAPI( $pAPIHookType, $pAPIHookGuid ){
+		$ret = FALSE;
+		$query = "DELETE FROM `".BIT_DB_PREFIX."package_plugins_api_hooks` WHERE `api_type` = ? AND `api_hook` = ?";
+		if( $this->mDb->query( $query, array( $pAPIHookType, $pAPIHookGuid) ) ){
+			$ret = TRUE;
+		}
+		return $ret;
+	}
+
+	/// }}}
 
 	/**
 	 * getDefaultPage 
