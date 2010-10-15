@@ -1245,11 +1245,11 @@ class BitSystem extends BitBase {
 			if (!$pIsPlugin) {
 			  // assign the dir
 			  $pkgHash[$guid]['dir'] = $pPkgDir;
-			  // assign the guid
-			  $pkgHash[$guid]['guid'] = $guid;
 			  // assign the path
 			  $pkgHash[$guid]['path'] = BIT_ROOT_PATH.$pPkgDir.'/';
 			}
+		    // assign the guid
+		    $pkgHash[$guid]['guid'] = $guid;
 			// assign a name if none set
 			if( empty( $pkgHash[$guid]['name'] ) ){
 				$pkgHash[$guid]['name'] = ucfirst( $guid );
@@ -1492,17 +1492,59 @@ class BitSystem extends BitBase {
 	
 	// {{{=========================== Plugin API Methods ==============================
 
-	function storePluginAPI( $pAPIHookType, $pAPIHookGuid ){
+	function storePluginAPI( $pAPIType, $pAPIGuid ){
 		$table = BIT_DB_PREFIX.'package_plugins_api_hooks';
 		// expunge before insert in case two packages try to declare the same hook
-		$this->expungePluginAPI( $pAPIHookType, $pAPIHookGuid );
-		$this->mDb->associateInsert( $table, array( 'api_type' => $pAPIHookType, 'api_hook' => $pAPIHookGuid ));
+		$this->expungePluginAPI( $pAPIType, $pAPIGuid );
+		$this->mDb->associateInsert( $table, array( 'api_type' => $pAPIType, 'api_hook' => $pAPIGuid ));
 	}
 
-	function expungePluginAPI( $pAPIHookType, $pAPIHookGuid ){
+	function expungePluginAPI( $pAPIType, $pAPIGuid ){
 		$ret = FALSE;
 		$query = "DELETE FROM `".BIT_DB_PREFIX."package_plugins_api_hooks` WHERE `api_type` = ? AND `api_hook` = ?";
-		if( $this->mDb->query( $query, array( $pAPIHookType, $pAPIHookGuid) ) ){
+		if( $this->mDb->query( $query, array( $pAPIType, $pAPIGuid) ) ){
+			$ret = TRUE;
+		}
+		return $ret;
+	}
+
+	function storePluginAPIHandler( &$pParmaHash ){ 
+		if( $this->verifyPluginAPIHandler( $pParamHash ) ){
+			$table = BIT_DB_PREFIX.'package_plugins_api_map';
+			// delete replace
+			$this->expungePluginAPIHandler( $pPluginGuid, $pAPIGuid, $pAPIType );
+			$this->mDb->associateInsert( $table, $pParamHash['store_api_handler'] );
+		}
+	}
+
+	function verifyPluginAPIHandler( &$pParamHash ){
+		if( empty( $pParamHash['plugin_guid'] ) ){
+			$this->mErrors['plugin_api_callback']['plugin_guid'] = tra('A value for plugin_guid is required.');
+		}else{
+			$pParamHash['store_api_handler']['plugin_guid'] = $pParamHash['plugin_guid'];
+		}
+		if( empty( $pParamHash['api_hook'] ) ){
+			$this->mErrors['plugin_api_callback']['api_hook'] = tra('A value for api_hook is required.');
+		}else{
+			$pParamHash['store_api_handler']['api_hook'] = $pParamHash['api_hook'];
+		}
+		if( empty( $pParamHash['api_type'] ) ){
+			$this->mErrors['plugin_api_callback']['api_type'] = tra('A value for api_type is required.');
+		}else{
+			$pParamHash['store_api_handler']['api_type'] = $pParamHash['api_type'];
+		}
+		if( empty( $pParamHash['plugin_handler'] ) ){
+			$this->mErrors['plugin_api_callback']['plugin_handler'] = tra('A value for plugin_handler is required.');
+		}else{
+			$pParamHash['store_api_handler']['plugin_handler'] = $pParamHash['plugin_handler'];
+		}
+		return( count( $this->mErrors )== 0 );
+	}
+
+	function expungePluginAPIHandler( $pPluginGuid, $pAPIGuid, $pAPIType ){
+		$ret = FALSE;
+		$query = "DELETE FROM `".BIT_DB_PREFIX."package_plugins_api_maps` WHERE `plugin_guid` = ? AND `api_hook` = ? AND `api_type` = ?";
+		if( $this->mDb->query( $query, array( $pPluginGuid, $pAPIGuid, $pAPIType ) ) ){
 			$ret = TRUE;
 		}
 		return $ret;
