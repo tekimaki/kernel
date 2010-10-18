@@ -1173,6 +1173,31 @@ class BitSystem extends BitBase {
 		}
 		return $ret;
 	}
+
+	function getPackagePluginSchema( $pPlugin, $pPackage=NULL ){
+		$schema = NULL;
+		// is there any schema data? if not load it up
+		if( empty( $this->mPackagesSchemas ) ){
+			$this->loadPackagesSchemas();
+		}
+		// if we dont know the package try to find the plugin via traversal
+		if( empty( $pPackage ) ){
+			foreach( $this->mPackagesSchemas as $pkgGuid => $pkgData ){
+				if( !empty( $pkgData['plugins'][$pPlugin] ) ){
+					$schema = $this->mPackagesSchemas[$pkgGuid]['plugins'][$pPlugin];
+				}
+			}
+		// we know the package lets get right to it
+		}else{
+			$schema = (!empty( $this->mPackagesSchemas[$pPackage]['plugins'][$pPlugin] )?$this->mPackagesSchemas[$pPackage]['plugins'][$pPlugin]:NULL);
+		}
+		return $schema;
+	}
+
+	function getPackagePluginSchemaValue( $pPlugin, $pProperty, $pPackage=NULL ){
+		$schema = $this->getPackagePluginSchema( $pPlugin, $pPackage );
+		return !empty( $schema[$pProperty] )?$schema[$pProperty]:NULL;
+	}
 	
 	/**
 	 * loadPackagesSchemas
@@ -1444,17 +1469,16 @@ class BitSystem extends BitBase {
 			$this->mErrors['plugin']['package_guid'] = tra('A value for package_guid is required.');
 		}
 
-		if( empty( $pParamHash['path_type'] ) ){
-			$this->mErrors['plugin']['path_type'] = tra('Unknown path for plugin something is very wrong in BitSystem.');
-		}
+		if( count( $this->mErrors )== 0 ){
+			$path_type = $this->getPackagePluginSchemaValue( $pParamHash['guid'], 'path_type', $pParamHash['package_guid'] );
 
-		$pParamHash['plugin_store']['guid'] = $pParamHash['guid'];
-		$pParamHash['plugin_store']['package_guid'] = $pParamHash['package_guid'];
-		$pParamHash['plugin_store']['version'] = !empty( $pParamHash['version'] )?$pParamHash['version']:'0.0.0';
-		$pParamHash['plugin_store']['active'] = (isset( $pParamHash['active'] ) && ( $pParamHash['active'] != TRUE || $pParamHash['active'] != 'y') )?'n':'y';
-		$pParamHash['plugin_store']['name'] = !empty( $pParamHash['name'] )?$pParamHash['name']:ucfirst($pParamHash['guid']);
-		$pParamHash['plugin_store']['description'] = !empty( $pParamHash['description'] )?$pParamHash['description']:NULL;
-		$pParamHash['plugin_store']['path_type'] = $pParamHash['path_type'];
+			$pParamHash['plugin_store']['package_guid'] = $pParamHash['package_guid'];
+			$pParamHash['plugin_store']['version'] = !empty( $pParamHash['version'] )?$pParamHash['version']:'0.0.0';
+			$pParamHash['plugin_store']['active'] = (isset( $pParamHash['active'] ) && ( $pParamHash['active'] != TRUE || $pParamHash['active'] != 'y') )?'n':'y';
+			$pParamHash['plugin_store']['name'] = !empty( $pParamHash['name'] )?$pParamHash['name']:ucfirst($pParamHash['guid']);
+			$pParamHash['plugin_store']['description'] = !empty( $pParamHash['description'] )?$pParamHash['description']:NULL;
+			$pParamHash['plugin_store']['path_type'] = !empty( $path_type )?$path_type:'package'; 		// if no path_type set we assume it came with the package
+		}
 
 		return( count( $this->mErrors )== 0 );
 	}
@@ -1508,12 +1532,12 @@ class BitSystem extends BitBase {
 		return $ret;
 	}
 
-	function storePluginAPIHandler( &$pParmaHash ){ 
+	function storePluginAPIHandler( &$pParamHash ){ 
 		if( $this->verifyPluginAPIHandler( $pParamHash ) ){
 			$table = BIT_DB_PREFIX.'package_plugins_api_map';
 			// delete replace
-			$this->expungePluginAPIHandler( $pPluginGuid, $pAPIGuid, $pAPIType );
-			$this->mDb->associateInsert( $table, $pParamHash['store_api_handler'] );
+			$this->expungePluginAPIHandler( $pParamHash['plugin_guid'], $pParamHash['api_hook'], $pParamHash['api_type'] );
+			$rslt = $this->mDb->associateInsert( $table, $pParamHash['store_api_handler'] );
 		}
 	}
 
