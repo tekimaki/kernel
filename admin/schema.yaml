@@ -80,7 +80,7 @@ kernel:
       plugin_handler C(64) NOTNULL
       CONSTRAINT '
       , CONSTRAINT `plugin_guid_ref` FOREIGN KEY (`plugin_guid`) REFERENCES `package_plugins`( `guid` )
-      , CONSTRAINT `plugin_api_hook_ref` FOREIGN KEY (`api_hook`) REFERENCES `package_plugins_api_hooks`( `api_hook` )'
+      , CONSTRAINT `plugin_api_hook_ref` FOREIGN KEY (`api_hook`,`api_type`) REFERENCES `package_plugins_api_hooks`( `api_hook`,`api_type` )'
       
   preferences: 
     site_online_help: y
