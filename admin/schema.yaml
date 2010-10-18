@@ -4,11 +4,11 @@ kernel:
   required: true
   requirements: 
     liberty: 
-      min: 2.1.6
+      min: 2.1.7
     users: 
-      min: 2.1.3
+      min: 2.1.4
     themes: 
-      min: 2.0.0
+      min: 2.0.1
     languages: 
       min: 2.0.0
   description: The kernel manages configuraiton and operation of the cms
