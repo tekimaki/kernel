@@ -1469,6 +1469,10 @@ class BitSystem extends BitBase {
 			$this->mErrors['plugin']['package_guid'] = tra('A value for package_guid is required.');
 		}
 
+		if( empty( $pParamHash['handler_file'] ) ){
+			$this->mErrors['plugin']['handler_file'] = tra('A value for handler_file is required.');
+		}
+
 		if( count( $this->mErrors )== 0 ){
 			$path_type = $this->getPackagePluginSchemaValue( $pParamHash['guid'], 'path_type', $pParamHash['package_guid'] );
 
@@ -1478,6 +1482,7 @@ class BitSystem extends BitBase {
 			$pParamHash['plugin_store']['name'] = !empty( $pParamHash['name'] )?$pParamHash['name']:ucfirst($pParamHash['guid']);
 			$pParamHash['plugin_store']['description'] = !empty( $pParamHash['description'] )?$pParamHash['description']:NULL;
 			$pParamHash['plugin_store']['path_type'] = !empty( $path_type )?$path_type:'package'; 		// if no path_type set we assume it came with the package
+			$pParamHash['plugin_store']['handler_file'] = $pParamHash['handler_file'];
 		}
 
 		return( count( $this->mErrors )== 0 );

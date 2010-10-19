@@ -31,6 +31,7 @@ array( 'DATADICT' => array(
 		  version C(16) NOTNULL DEFAULT '0.0.0',
 		  active C(1) DEFAULT NULL,
 		  path_type C(64) NOTNULL,
+		  handler_file C(64) NOTNULL,
 		  name C(64),
 		  description C(250)
 		  CONSTRAINT '
