@@ -157,37 +157,6 @@ class BitBase {
 	}
 
 	/**
-	 * This method should be THE method used to display a template. php files should not
-	 * access $gBitSmarty directly.
-	 *
-	 * @param string pMsg error message to be displayed
-	 * @return none this function will DIE DIE DIE!!!
-	 * @access public
-	 **/
-	function display( $pPackage, $pTemplate ) {
-		global $gBitSmarty, $gBitLanguage, $style, $style_base;
-		if( !empty( $style ) && !empty( $style_base )) {
-			if (file_exists(BIT_THEMES_PATH."styles/$style_base/$pTemplate")) {
-				// Theme has overriden template
-				$_smarty_tpl_file = 'file:'.BIT_STYLES_PATH."/$style_base/$pTemplate";
-			} else {
-				// Use default
-				$_smarty_tpl_file = 'file:'.BIT_ROOT_PATH."$pPackage/templates/$pTemplate";
-			}
-		}
-/*
-		global $gBitLanguage, $style, $style_base;
-		if (isset($style) && isset($style_base)) {
-			if (file_exists(BIT_STYLES_PATH."/$style_base/$_smarty_tpl_file")) {
-				$_smarty_tpl_file = BIT_STYLES_PATH."/$style_base/$_smarty_tpl_file";
-			}
-		}
- */
-		$gBitSmarty->display( $_smarty_tpl_file );
-		//		$gBitSmarty->display( 'bitpackage:'.$pPackage.$pTemplate );
-	}
-
-	/**
 	 * Returns entry from the mInfo hash if field exists
 	 * @param pFieldName the instance of the database mechanism
 	 **/
