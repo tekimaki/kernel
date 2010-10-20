@@ -160,6 +160,7 @@ if( $gBitSystem->isDatabaseValid() ) {
 
 	// some liberty plugins might need to run some functions.
 	// it's necessary that we call them early on after scanPackages() has been completed.
+	global $gLibertySystem;
 	foreach( $gLibertySystem->getPluginFunctions( 'preload_function' ) as $func ) {
 		$func();
 	}

@@ -1120,16 +1120,14 @@ class BitSystem extends BitBase {
 		if( empty( $this->mPackagesConfig ) ){
 			$this->loadPackagesConfig();
 		}
+		global $gPreScan;
+		$loadPkgs = array();
+		// system is installed
 		if( $pkgs = $this->mPackagesConfig ) {
-			global $gPreScan;
-			$loadPkgs = array();
-
 			// gPreScan holds a list of packages that MUST be loaded first
-			if( !empty( $gPreScan ) && is_array( $gPreScan )) {
-				foreach( $gPreScan as $pkgGuid ) {
-					if( $this->isPackageActive( $pkgGuid ) ){
-						$loadPkgs[] = $this->getPackageConfig( $pkgGuid );
-					}
+			foreach( $gPreScan as $pkgGuid ) {
+				if( $this->isPackageActive( $pkgGuid ) ){
+					$loadPkgs[] = $this->getPackageConfig( $pkgGuid );
 				}
 			}
 
@@ -1138,11 +1136,16 @@ class BitSystem extends BitBase {
 					$loadPkgs[] = $pkg; 
 				}
 			}
-
-			// load the pkgs
-			foreach( $loadPkgs as $loadPkg ) {
-				$this->initPackage( $loadPkg );
+		// system is not installed yet - init defaults
+		}else{
+			$schemas = $this->getPackagesSchemas();
+			foreach( $gPreScan as $pkgGuid ) {
+				$loadPkgs[] = $schemas[$pkgGuid];
 			}
+		}
+		// load the pkgs
+		foreach( $loadPkgs as $loadPkg ) {
+			$this->initPackage( $loadPkg );
 		}
 	}
 
@@ -1233,8 +1236,8 @@ class BitSystem extends BitBase {
 	 *
 	 * scans all packages and loads their schema.yaml file
 	 */
-	function loadPackagesSchemas(){
-		$this->getPackagesSchemas( TRUE );
+	function loadPackagesSchemas( $pForce = FALSE ){
+		$this->getPackagesSchemas( $pForce );
 
 		// @TODO Deprecate this too - issue is in install pkg where it tries to reconcile permissions issues
 		foreach( $this->mPackagesSchemas as $package=>$pkgHash ){
