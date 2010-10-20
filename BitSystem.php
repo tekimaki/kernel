@@ -1140,7 +1140,9 @@ class BitSystem extends BitBase {
 		}else{
 			$schemas = $this->getPackagesSchemas();
 			foreach( $gPreScan as $pkgGuid ) {
-				$loadPkgs[] = $schemas[$pkgGuid];
+				if ( !empty( $schemas[ $pkgGuid ] ) ) {
+					$loadPkgs[] = $schemas[$pkgGuid];
+				}
 			}
 		}
 		// load the pkgs
