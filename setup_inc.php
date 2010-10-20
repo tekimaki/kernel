@@ -148,7 +148,12 @@ if( $gBitSystem->isDatabaseValid() ) {
 	define( 'LIBERTY_PKG_URL', $root.'liberty/' );
 
 	// load only installed and active packages
-	$gBitSystem->scanPackages( 'bit_setup_inc.php', TRUE, 'active' );
+	// DEPRECATE autoscan packages
+	if( $gBitSystem->isFeatureActive( 'kernel_autoscan_pkgs', FALSE ) ){
+		$gBitSystem->scanPackages( 'bit_setup_inc.php', TRUE, 'active' );
+	}else{
+		$gBitSystem->initPackages();
+	}
 
 	// some plugins check for active packages, so we do this *after* package scanning
 	$gBitSmarty->assign_by_ref( "gBitSystem", $gBitSystem );

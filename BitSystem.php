@@ -31,6 +31,10 @@ define( 'DEFAULT_PACKAGE', 'kernel' );
 define( 'CENTER_COLUMN', 'c' );
 define( 'HOMEPAGE_LAYOUT', 'home' );
 
+define( 'PKG_PLUGIN_TYPE_FUNCTION', 'function' );
+define( 'PKG_PLUGIN_TYPE_SQL', 'sql' );
+define( 'PKG_PLUGIN_TYPE_TPL', 'tpl' );
+
 /**
  * kernel::BitSystem
  *
@@ -61,6 +65,9 @@ class BitSystem extends BitBase {
 
 	// Installed Package Plugins
 	var $mPackagePluginsConfig = array();
+
+	// An array of registered plugin handlers
+	var $mPackagePluginsHandlers;
 
 	// Cross Reference Package Directory Name => Package Key used as index into $mPackages
 	var $mPackagesDirNameXref = array();
@@ -617,17 +624,6 @@ class BitSystem extends BitBase {
 		return !is_null( $this->getPackageConfig( $pPackageGuid ) );
 	}
 
-	// === isPluginInstalled
-	/**
-	 * check's if a package plugin is Installed
-	 * @param $pPackagePluginGuid the guid of the package to test
-	 * @return boolean
-	 * @access public
-	 */
-	function isPluginInstalled( $pPackagePluginGuid ){
-		return !is_null( $this->getPluginConfig( $pPackagePluginGuid ) );
-	}
-
 	// === isPackageRequired
 	/**
 	 * check's if a package is required.
@@ -809,6 +805,13 @@ class BitSystem extends BitBase {
 	 * @access public
 	 */
 	function registerPackage( $pRegisterHash ) {
+		global $gBitSystem;
+		if( $gBitSystem->isFeatureActive( 'kernel_autoscan_pkgs', FALSE ) ){
+			$this->configPackage( $pRegisterHash );
+		}
+	}
+
+	function configPackage( $pRegisterHash ){
 		if( !isset( $pRegisterHash['package_name'] )) {
 			$this->fatalError( tra("Package name not set in ")."registerPackage: $this->mPackageFileName" );;
 		} else {
@@ -1034,6 +1037,28 @@ class BitSystem extends BitBase {
 		}
 	}
 
+	function initPackage( $pPkg ) {
+		$this->mRegisterCalled = FALSE;
+		$scanFile = BIT_ROOT_PATH.$pPkg['dir'].'/bit_setup_inc.php';
+		$file_exists = 0;
+
+		$registerHash = array(
+			//for auto registered packages Registration Package Name = Package Directory Name
+			'package_name' => $pPkg['guid'],
+			'package_path' => BIT_ROOT_PATH.$pPkg['dir'].'/',
+			'required_package' => $pPkg['required'],
+			'homable' => !empty( $pPkg['homable'] )?TRUE:FALSE,
+		);
+		$this->configPackage( $registerHash );
+
+		if( file_exists( $scanFile ) ) {
+			$file_exists = 1;
+			global $gBitSystem, $gLibertySystem, $gBitSmarty, $gBitUser, $gBitLanguage;
+			$this->mPackageFileName = $scanFile;
+			include_once( $scanFile );
+		}
+	}
+
 	// === scanPackages
 	/**
 	 *
@@ -1089,54 +1114,58 @@ class BitSystem extends BitBase {
 		foreach( $loadPkgs as $loadPkg ) {
 			$this->loadPackage( $loadPkg, $pScanFile, $pOnce );
 		}
+	}
 
-		if( !defined( 'BIT_STYLES_PATH' ) && defined( 'THEMES_PKG_PATH' )) {
-			define( 'BIT_STYLES_PATH', THEMES_PKG_PATH.'styles/' );
+	function initPackages(){
+		if( empty( $this->mPackagesConfig ) ){
+			$this->loadPackagesConfig();
 		}
+		if( $pkgs = $this->mPackagesConfig ) {
+			global $gPreScan;
+			$loadPkgs = array();
 
-		if( !defined( 'BIT_STYLES_URL' ) && defined( 'THEMES_PKG_URL' )) {
-			define( 'BIT_STYLES_URL', THEMES_PKG_URL.'styles/' );
+			// gPreScan holds a list of packages that MUST be loaded first
+			if( !empty( $gPreScan ) && is_array( $gPreScan )) {
+				foreach( $gPreScan as $pkgGuid ) {
+					if( $this->isPackageActive( $pkgGuid ) ){
+						$loadPkgs[] = $this->getPackageConfig( $pkgGuid );
+					}
+				}
+			}
+
+			foreach( $pkgs as $pkg ){
+				if( !in_array( $pkg['dir'], $gPreScan ) ){
+					$loadPkgs[] = $pkg; 
+				}
+			}
+
+			// load the pkgs
+			foreach( $loadPkgs as $loadPkg ) {
+				$this->initPackage( $loadPkg );
+			}
+		}
+	}
+
+	function configAllPackages(){
+		if( empty( $this->mPackagesSchemas ) ){
+			$this->loadPackagesSchemas();
+		}
+		if( $pkgs = $this->mPackagesSchemas ) {
+			foreach( $pkgs as $pkg ){
+				$registerHash = array(
+					//for auto registered packages Registration Package Name = Package Directory Name
+					'package_name' => $pkg['guid'],
+					'package_path' => BIT_ROOT_PATH.$pkg['dir'].'/',
+					'required_package' => $pkg['required'],
+					'homable' => !empty( $pkg['homable'] )?TRUE:FALSE,
+				);
+				$this->configPackage( $registerHash );
+			}
 		}
 	}
 
 
 	// {{{=========================== Schema Getters ==============================
-
-	/**
-	 *
-	 */
-	/*
-	function getPackagesPluginsSchemas( $pForce = FALSE ){
-		$ret = array();
-		if( empty( $this->mPackagesSchemas ) || $pForce ){
-			// gPreScan may hold a list of packages that must be loaded first
-			global $gPreScan;
-			if( !empty( $gPreScan ) && is_array( $gPreScan )) {
-				foreach( $gPreScan as $pkgDir ) {
-					$loadPkgs[] = $pkgDir;
-				}
-			}
-			
-			// load lib configs
-			if( $pkgDir = opendir( BIT_ROOT_PATH )) {
-				while( FALSE !== ( $dirName = readdir( $pkgDir ))) {
-					if( $dirName != '..'  && $dirName != '.' && is_dir( BIT_ROOT_PATH . '/' . $dirName ) && $dirName != 'CVS' && preg_match( '/^\w/', $dirName )) {
-						$loadPkgs[] = $dirName;
-					}
-				}
-			}
-			$loadPkgs = array_unique( $loadPkgs );
-			
-			// load the list of pkgs in the right order
-			foreach( $loadPkgs as $loadPkg ) {
-				if( $schema = $this->loadPackagePluginSchemas( $loadPkg ) ){
-					$this->mPackagesSchemas[$loadPkg]['plugins'] = $schema;
-				}
-			}
-		}
-		return $this->mPackagesSchemas;
-	}
-	 */
 
 	/**
 	 * loadPackagePluginsSchemas
@@ -1517,7 +1546,47 @@ class BitSystem extends BitBase {
 		return( count( $this->mErrors )== 0 );
 	}
 
+	// === isPluginInstalled
+	/**
+	 * check's if a package plugin is Installed
+	 * @param $pPackagePluginGuid the guid of the package to test
+	 * @return boolean
+	 * @access public
+	 */
+	function isPluginInstalled( $pPackagePluginGuid ){
+		return !is_null( $this->getPluginConfig( $pPackagePluginGuid ) );
+	}
+
+
 	/// }}}
+	
+	// {{{=========================== Plugin Getters ==============================
+
+	function getPackagePluginHandlers( $pAPIType, $pAPIGuid  ){
+		$ret = NULL;
+		if( empty( $this->mPackagePluginsHandlers[$pAPIType][$pAPIGuid] ) ){
+			$this->loadPackagePluginHandlers( $pAPIType, $pAPIGuid  );
+		}
+		if( !empty( $this->mPackagePluginsHandlers[$pAPIType][$pAPIGuid] ) ){
+			$ret = $this->mPackagePluginsHandlers[$pAPIType][$pAPIGuid];
+		}
+		return $ret;
+	}
+
+	// @TODO maybe all should load on first call
+	function loadPackagePluginHandlers( $pAPIType, $pAPIGuid  ){
+		$ret = array();
+		$query = "SELECT ppam.*, pp.package_guid, pp.path_type, pp.handler_file, pp.active FROM `package_plugins_api_map` ppam 
+			INNER JOIN `package_plugins` pp ON ( ppam.`plugin_guid` = pp.`guid` )
+			WHERE ppam.`api_type` = ? AND ppam.`api_hook` = ? AND pp.`active` = ?";
+		$bindVars = array( $pAPIType, $pAPIGuid, 'y' );
+		if( $ret = $this->mDb->getArray( $query, $bindVars ) ){
+			$this->mPackagePluginsHandlers[$pAPIType][$pAPIGuid] = $ret;
+		}
+		return $ret;
+	}
+
+	// }}}
 	
 	// {{{=========================== Plugin API Methods ==============================
 

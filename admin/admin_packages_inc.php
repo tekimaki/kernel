@@ -30,6 +30,8 @@ if( !empty( $_REQUEST['features'] ) ) {
 	$gBitSystem->loadPackagesConfig( TRUE );
 }
 
+$gBitSystem->configAllPackages();
+
 // $gBitSystem->verifyInstalledPackages();	// this causes some weird rendering issues - wjames	
 $gBitSmarty->assign( 'requirements', $gBitSystem->calculateRequirements( TRUE ) );
 $gBitSmarty->assign( 'requirementsMap', $gBitSystem->drawRequirementsGraph( TRUE, 'cmapx' ));
