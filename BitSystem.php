@@ -1060,6 +1060,7 @@ class BitSystem extends BitBase {
 			$this->mPackageFileName = $scanFile;
 			include_once( $scanFile );
 		}
+		$this->initPackagePlugins( $pPkg['guid'] );
 	}
 
 	// === scanPackages
@@ -1151,6 +1152,41 @@ class BitSystem extends BitBase {
 		// load the pkgs
 		foreach( $loadPkgs as $loadPkg ) {
 			$this->initPackage( $loadPkg );
+		}
+	}
+
+	function initPackagePlugins( $pPkgGuid = NULL ){
+		if( empty( $this->mPackagePluginsConfig ) ){
+			$this->loadPackagePluginsConfig();
+		}
+		if( $plugins = $this->mPackagePluginsConfig ){
+			foreach( $plugins as $plugin ){
+				if( empty( $pPkgGuid ) || $plugin['package_guid'] == $pPkgGuid ){
+					$this->initPlugin( $plugin );
+				}
+			}
+		}
+	}
+
+	function getPackagePluginPath( $pPlugin ){
+		$path = NULL;
+		switch( $pPlugin['path_type'] ){
+		case 'package':
+			$dir = $this->getPackageConfigValue( $pPlugin['package_guid'], 'dir' ); 
+			$path = constant( strtoupper( $dir ).'_PKG_PATH' ); 
+			break;
+		case 'config':
+			$path = CONFIG_PKG_PATH.$pPlugin['package_guid'].'/plugins/'.$pPlugin['guid'].'/';
+			break;
+		}
+		return $path;
+	}
+
+	function initPlugin( $pPlugin ){
+		if( $path = $this->getPackagePluginPath( $pPlugin ) ){
+			include_once( $path.$pPlugin['handler_file'] );
+		}else{
+			$gBitSystem->fatalError( 'Plugin '.$pPlugin['name'].'initialization failed in BitSystem::initPlugin. File location unknown.' );
 		}
 	}
 
@@ -1584,7 +1620,7 @@ class BitSystem extends BitBase {
 	// @TODO maybe all should load on first call
 	function loadPackagePluginHandlers( $pAPIType = NULL, $pAPIGuid = NULL ){
 		$ret = $bindVars = array();
-		$query = "SELECT ppam.*, pp.package_guid, pp.path_type, pp.handler_file, pp.active FROM `package_plugins_api_map` ppam 
+		$query = "SELECT ppam.*, pp.guid, pp.package_guid, pp.path_type, pp.handler_file, pp.active FROM `package_plugins_api_map` ppam 
 			INNER JOIN `package_plugins` pp ON ( ppam.`plugin_guid` = pp.`guid` ) WHERE pp.`active` = ?";
 		$bindVars[] = 'y';
 		if( !empty( $pAPIType ) ){
@@ -1609,9 +1645,19 @@ class BitSystem extends BitBase {
 		return $ret;
 	}
 
-	function loadPackagePluginsConfig(){
-		$this->loadPackagePluginHandlers();
+	function loadPackagePluginsConfig( $pForce = FALSE ){
+		if( empty( $this->mPackagePluginsConfig ) || $pForce ){
+			// @TODO add required
+			$query = "SELECT guid as guid_key, guid, package_guid, version, active, path_type, handler_file, name, description FROM `".BIT_DB_PREFIX."package_plugins` pp";
+			if( $result = $this->mDb->getAssoc( $query ) ){
+				$this->mPackagePluginsConfig = &$result;
+			}
+			// load up the handlers too
+			$this->loadPackagePluginHandlers();
+		}
+
 		// vd( $this->mPackagePluginsHandlers );
+		return $this->mPackagePluginsConfig;
 	}
 
 	// }}}
