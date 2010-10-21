@@ -857,7 +857,7 @@ class BitSystem extends BitBase {
 		// Define <PACKAGE>_PKG_NAME
 		$pkgDefine = $pkgName.'_PKG_NAME';
 		if( !defined( $pkgDefine )) {
-			define( $pkgDefine, $pkgName );
+			define( $pkgDefine, $packageGuid );
 		}
 
 		// Define <PACKAGE>_PKG_DIR
@@ -1662,6 +1662,25 @@ class BitSystem extends BitBase {
 		// vd( $this->mPackagePluginsHandlers );
 		return $this->mPackagePluginsConfig;
 	}
+
+	// === isPackagePluginActive
+	/**
+	 * check's if a package plugin is active.
+	 * @param $pPackagePluginGuid the guid of the package to test
+	 * @return boolean
+	 * @access public
+	 */
+	function isPackagePluginActive( $pPluginGuid ) {
+		return( $this->getPackagePluginConfigValue( $pPluginGuid, 'active' ) == 'y' );
+	}
+
+	function getPackagePluginConfigValue( $pPluginGuid, $pProperty ){
+		if( empty( $this->mPackagesConfig[$pPluginGuid] ) ){
+			$this->getPackageConfig( $pPluginGuid, TRUE );
+		}
+		return !empty( $this->mPackagePluginsConfig[$pPluginGuid][$pProperty] )?$this->mPackagesConfig[$pPluginGuid][$pProperty]:NULL;
+	}
+
 
 	// }}}
 	
