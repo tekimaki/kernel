@@ -109,6 +109,7 @@ if( $gBitSystem->isDatabaseValid() ) {
 		$gBitSystem->upgradeKernel();
 	}
 	$gBitSystem->loadPackagesConfig();
+	$gBitSystem->loadPackagePluginsConfig();
 
 	// output compression
 	if( ini_get( 'zlib.output_compression' ) == 1 ) {

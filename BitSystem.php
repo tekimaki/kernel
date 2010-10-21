@@ -1579,16 +1579,36 @@ class BitSystem extends BitBase {
 	}
 
 	// @TODO maybe all should load on first call
-	function loadPackagePluginHandlers( $pAPIType, $pAPIGuid  ){
-		$ret = array();
+	function loadPackagePluginHandlers( $pAPIType = NULL, $pAPIGuid = NULL ){
+		$ret = $bindVars = array();
 		$query = "SELECT ppam.*, pp.package_guid, pp.path_type, pp.handler_file, pp.active FROM `package_plugins_api_map` ppam 
-			INNER JOIN `package_plugins` pp ON ( ppam.`plugin_guid` = pp.`guid` )
-			WHERE ppam.`api_type` = ? AND ppam.`api_hook` = ? AND pp.`active` = ?";
-		$bindVars = array( $pAPIType, $pAPIGuid, 'y' );
-		if( $ret = $this->mDb->getArray( $query, $bindVars ) ){
-			$this->mPackagePluginsHandlers[$pAPIType][$pAPIGuid] = $ret;
+			INNER JOIN `package_plugins` pp ON ( ppam.`plugin_guid` = pp.`guid` ) WHERE pp.`active` = ?";
+		$bindVars[] = 'y';
+		if( !empty( $pAPIType ) ){
+			$query .= " AND ppam.`api_type` = ?";
+			$bindVars[] = $pAPIType;
+		}
+		if( !empty( $pAPIGuid ) ){
+			$query .= " AND ppam.`api_hook` = ?";
+			$bindVars[] = $pAPIGuid;
+		}
+		if( $rslt = $this->mDb->getArray( $query, $bindVars ) ){
+			if( !empty( $pAPIType ) && !empty( $pAPIGuid ) ){
+				$this->mPackagePluginsHandlers[$pAPIType][$pAPIGuid] = $rlst;
+	 		}else{
+				// sort them
+				foreach( $rslt as $row ){
+					$this->mPackagePluginsHandlers[$row['api_type']][$row['api_hook']][] = $row;
+				}
+			}
+			$ret = $this->mPackagePluginsHandlers;
 		}
 		return $ret;
+	}
+
+	function loadPackagePluginsConfig(){
+		$this->loadPackagePluginHandlers();
+		// vd( $this->mPackagePluginsHandlers );
 	}
 
 	// }}}
