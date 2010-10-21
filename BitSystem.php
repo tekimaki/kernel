@@ -1238,7 +1238,7 @@ class BitSystem extends BitBase {
 						$str = '#^'.addslashes( CONFIG_PKG_PATH ).'#';
 						preg_match( $str, $pPluginsPath, $matches );
 						$schema =  $this->loadPackageSchema($pluginDirPath, TRUE);
-						$scheme['path_type'] = !empty( $matches )?'config':'package'; // keep track of where we found it to reduce scanning
+						$schema['path_type'] = !empty( $matches )?'config':'package'; // keep track of where we found it to reduce scanning
 						$ret = array_merge($ret, $schema);
 					}
 				}
