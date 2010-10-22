@@ -875,7 +875,7 @@ class BitSystem extends BitBase {
 
 		if( $this->isPackageInstalled( $packageGuid ) ){
 			// @TODO move this to yaml and registration table
-			$this->mPackagesConfig[$pkgNameKey]['service']  = !empty( $pRegisterHash['service'] ) ? $pRegisterHash['service'] : FALSE;
+			// $this->mPackagesConfig[$pkgNameKey]['service']  = !empty( $pRegisterHash['service'] ) ? $pRegisterHash['service'] : FALSE;
 
 			// pass package settings to installed packages hash
 			$this->mPackagesConfig[$pkgNameKey]['url']  = BIT_ROOT_URL . basename( $path ) . '/';
@@ -1650,8 +1650,7 @@ class BitSystem extends BitBase {
 
 	function loadPackagePluginsConfig( $pForce = FALSE ){
 		if( empty( $this->mPackagePluginsConfig ) || $pForce ){
-			// @TODO add required
-			$query = "SELECT guid as guid_key, guid, package_guid, version, active, path_type, handler_file, name, description FROM `".BIT_DB_PREFIX."package_plugins` pp";
+			$query = "SELECT guid as guid_key, guid, package_guid, version, active, required, path_type, handler_file, name, description FROM `".BIT_DB_PREFIX."package_plugins` pp";
 			if( $result = $this->mDb->getAssoc( $query ) ){
 				$this->mPackagePluginsConfig = &$result;
 			}
