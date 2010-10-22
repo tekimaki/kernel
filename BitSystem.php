@@ -1469,7 +1469,7 @@ class BitSystem extends BitBase {
 		$pParamHash['package_store']['version'] = !empty( $pParamHash['version'] )?$pParamHash['version']:'0.0.0';
 		$pParamHash['package_store']['homeable'] = (isset( $pParamHash['homeable'] ) && $pParamHash['homeable'] != TRUE)?'n':'y';
 		$pParamHash['package_store']['active'] = (isset( $pParamHash['active'] ) && ( $pParamHash['active'] != TRUE || $pParamHash['active'] != 'y') )?'n':'y';
-		$pParamHash['package_store']['required'] = (isset( $pParamHash['required'] ) && ( $pParamHash['required'] == TRUE || $pParamHash['required'] == 'y') )?'y':'n';
+		$pParamHash['package_store']['required'] = (isset( $pParamHash['required'] ) && ( $pParamHash['required'] === TRUE || $pParamHash['required'] == 'y') )?'y':'n';
 		$pParamHash['package_store']['name'] = !empty( $pParamHash['name'] )?$pParamHash['name']:ucfirst($pParamHash['guid']);
 		$pParamHash['package_store']['description'] = !empty( $pParamHash['description'] )?$pParamHash['description']:NULL;
 		$pParamHash['package_store']['dir'] = $pParamHash['dir'];
@@ -1554,7 +1554,7 @@ class BitSystem extends BitBase {
 			$pParamHash['plugin_store']['package_guid'] = $pParamHash['package_guid'];
 			$pParamHash['plugin_store']['version'] = !empty( $pParamHash['version'] )?$pParamHash['version']:'0.0.0';
 			$pParamHash['plugin_store']['active'] = (isset( $pParamHash['active'] ) && ( $pParamHash['active'] != TRUE || $pParamHash['active'] != 'y') )?'n':'y';
-		    $pParamHash['plugin_store']['required'] = (isset( $pParamHash['required'] ) && ( $pParamHash['required'] == TRUE || $pParamHash['required'] == 'y') )?'y':'n';
+		    $pParamHash['plugin_store']['required'] = (isset( $pParamHash['required'] ) && ( $pParamHash['required'] === TRUE || $pParamHash['required'] == 'y') )?'y':'n';
 			$pParamHash['plugin_store']['name'] = !empty( $pParamHash['name'] )?$pParamHash['name']:ucfirst($pParamHash['guid']);
 			$pParamHash['plugin_store']['description'] = !empty( $pParamHash['description'] )?$pParamHash['description']:NULL;
 			$pParamHash['plugin_store']['path_type'] = !empty( $path_type )?$path_type:'package'; 		// if no path_type set we assume it came with the package
