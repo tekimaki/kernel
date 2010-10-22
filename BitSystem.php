@@ -1636,7 +1636,7 @@ class BitSystem extends BitBase {
 		}
 		if( $rslt = $this->mDb->getArray( $query, $bindVars ) ){
 			if( !empty( $pAPIType ) && !empty( $pAPIGuid ) ){
-				$this->mPackagePluginsHandlers[$pAPIType][$pAPIGuid] = $rlst;
+				$this->mPackagePluginsHandlers[$pAPIType][$pAPIGuid] = $rslt;
 	 		}else{
 				// sort them
 				foreach( $rslt as $row ){
