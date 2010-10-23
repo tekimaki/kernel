@@ -1201,7 +1201,7 @@ class BitSystem extends BitBase {
 					//for auto registered packages Registration Package Name = Package Directory Name
 					'package_name' => $pkg['guid'],
 					'package_path' => BIT_ROOT_PATH.$pkg['dir'].'/',
-					'required_package' => $pkg['required'],
+					'required_package' => !empty( $pkg['required'] )?TRUE:FALSE,
 					'homable' => !empty( $pkg['homable'] )?TRUE:FALSE,
 				);
 				$this->configPackage( $registerHash );
