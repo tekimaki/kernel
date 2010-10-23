@@ -1173,8 +1173,7 @@ class BitSystem extends BitBase {
 		$path = NULL;
 		switch( $pPlugin['path_type'] ){
 		case 'package':
-			$dir = $this->getPackageConfigValue( $pPlugin['package_guid'], 'dir' ); 
-			$path = constant( strtoupper( $dir ).'_PKG_PATH' ); 
+			$path = constant( strtoupper( $pPlugin['package_guid'] ).'_PKG_PATH' ); 
 			break;
 		case 'config':
 			$path = CONFIG_PKG_PATH.$pPlugin['package_guid'].'/plugins/'.$pPlugin['guid'].'/';
