@@ -456,8 +456,9 @@ class BitSystem extends BitBase {
 			return;
 		}
 
-		$gBitThemes->loadAjax('jquery');
-		$gBitThemes->loadJavascript( UTIL_PKG_PATH.'uniform/js/uni-form.jquery.js' );
+		// @TODO debug - causes where problems loading existing data
+		// $gBitThemes->loadAjax('jquery');
+		// $gBitThemes->loadJavascript( UTIL_PKG_PATH.'uniform/js/uni-form.jquery.js' );
 
 		if( !empty( $pBrowserTitle )) {
 			$this->setBrowserTitle( $pBrowserTitle );
