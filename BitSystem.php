@@ -1357,7 +1357,10 @@ class BitSystem extends BitBase {
 			// load all plugin schemas for this package
 			if( !$pIsPlugin ){
 				if( $plugin_schemas = $this->loadPackagePluginSchemas( $pPkgDir, $guid ) ){
-					$pkgHash[$guid]['plugins'] = $plugin_schemas;
+					if( empty($pkgHash[$guid]['plugins']) ){
+						$pkgHash[$guid]['plugins'] = array();
+					}
+					$pkgHash[$guid]['plugins'] = array_merge( $pkgHash[$guid]['plugins'], $plugin_schemas );
 				}
 			}
 
