@@ -1750,12 +1750,14 @@ class BitSystem extends BitBase {
 
 	/**
 	 * getDefaultPage 
+	 * @TODO DEPRECATED SLATED FOR DELETE - THIS IS SERIOUSLY STUPID - THE DEFAULT PAGE IS ALWAYS INDEX BECAUSE INDEX USES bit_index TO LOAD WHATEVER PACKAGE 
 	 * 
 	 * @access public
 	 * @return URL of site homepage 
 	 */
 	function getDefaultPage() {
-		return $this->getIndexPage( $this->getConfig( "bit_index" ) );
+		return BIT_ROOT_URL;
+		// return $this->getIndexPage( $this->getConfig( "bit_index" ) );
 	}
 
 	/**
