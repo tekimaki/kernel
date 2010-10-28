@@ -39,8 +39,8 @@
 							<option value="user_home"{if $gBitSystem->getConfig('bit_index') eq 'user_home'} selected="selected"{/if}>{tr}User's homepage{/tr}</option>
 							<option value="group_home"{if $gBitSystem->getConfig('bit_index') eq 'group_home'} selected="selected"{/if}>{tr}Group home{/tr}</option>
 							<option value="users_custom_home"{if $gBitSystem->getConfig('bit_index') eq $gBitSystem->getConfig('site_url_index')} selected="selected"{/if}>{tr}Custom home{/tr}</option>
-							{foreach key=name item=package from=$gBitSystem->mPackages}
-								{if $package.homeable && $package.installed}
+							{foreach key=guid item=package from=$gBitSystem->mPackagesConfig}
+								{if $package.active eq 'y' && $package.homeable eq 'y'}
 									<option {if $gBitSystem->getConfig('bit_index') eq $package.dir}selected="selected"{/if} value="{$package.dir}">{$package.dir|capitalize}</option>
 								{/if}
 							{/foreach}
