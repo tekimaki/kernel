@@ -1284,12 +1284,30 @@ class BitSystem extends BitBase {
 
 		// @TODO Deprecate this too - issue is in install pkg where it tries to reconcile permissions issues
 		foreach( $this->mPackagesSchemas as $package=>$pkgHash ){
+			$this->loadPermissionsSchema( $package, $pkgHash );
+			/*
 			if( !empty( $pkgHash['permissions'] ) ){
 				foreach( $pkgHash['permissions'] as $perm => &$permHash ){
 					$permHash['package'] = $package;
 					$permHash['name'] = $perm;
 					$this->mPermissionsSchema[$perm] = $permHash;
 				}
+			}
+			*/
+			if( !empty( $pkgHash['plugins'] ) ){
+				foreach( $pkgHash['plugins'] as $guid => &$pluginHash ){
+					$this->loadPermissionsSchema( $package, $pluginHash );
+				}
+			}
+		}
+	}
+
+	function loadPermissionsSchema( $package, $pHash ){
+		if( !empty( $pHash['permissions'] ) ){
+			foreach( $pHash['permissions'] as $perm => &$permHash ){
+				$permHash['package'] = $package;
+				$permHash['name'] = $perm;
+				$this->mPermissionsSchema[$perm] = $permHash;
 			}
 		}
 	}
