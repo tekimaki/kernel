@@ -55,7 +55,7 @@
 					{/forminput}
 				</div>
 
-				<div class="row submit">
+				<div class="buttonHolder row submit">
 					<input type="submit" name="serverTabSubmit" value="{tr}Change preferences{/tr}" />
 				</div>
 			{/legend}
@@ -124,7 +124,7 @@
 					{/forminput}
 				</div>
 
-				<div class="row submit">
+				<div class="buttonHolder row submit">
 					<input type="submit" name="serverTabSubmit" value="{tr}Change preferences{/tr}" />
 				</div>
 			{/legend}
@@ -169,7 +169,7 @@
 					{/forminput}
 				</div>
 
-				<div class="row submit">
+				<div class="buttonHolder row submit">
 					<input type="submit" name="siteTabSubmit" value="{tr}Change preferences{/tr}" />
 				</div>
 			{/legend}
@@ -198,7 +198,7 @@
 					{/forminput}
 				</div>
 
-				<div class="row submit">
+				<div class="buttonHolder row submit">
 					<input type="submit" name="proxyTabSubmit" value="{tr}Change preferences{/tr}" />
 				</div>
 			{/legend}

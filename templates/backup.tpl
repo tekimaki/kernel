@@ -17,7 +17,7 @@
 					<p>{tr}Creating backups may take a long time. If the process is not completed you will see a blank screen. If so you need to increment the maximum script execution time from your php.ini file{/tr}</p>
 					<p><strong>Please note that there is no ecryption added to the backup file when you create a backup.</strong></p>
 
-					<div class="row submit">
+					<div class="buttonHolder row submit">
 						<input type="submit" name="generate" value="{tr}Create new Backup{/tr}" />
 					</div>
 				{/form}
@@ -33,7 +33,7 @@
 						{/forminput}
 					</div>
 					
-					<div class="row submit">
+					<div class="buttonHolder row submit">
 						<input type="submit" name="upload" value="{tr}upload{/tr}" />
 					</div>
 				{/form}

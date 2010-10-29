@@ -145,7 +145,7 @@
 				{/foreach}
 			{/legend}
 
-			<div class="row submit">
+			<div class="buttonHolder row submit">
 				<input type="submit" name="features" value="{tr}Modify Activation{/tr}"/>
 			</div>
 		{/jstab}
