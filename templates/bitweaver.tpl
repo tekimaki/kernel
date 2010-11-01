@@ -54,6 +54,7 @@
     			</div><!-- end #extra -->{* needed by output filters. *}
     		{/if}
         </div>
+		<div style="clear:both">&nbsp;</div>
 	</div><!-- end #container -->
 	<div id="footer">
 		{if $gBitSystem->isFeatureActive( 'site_bottom_column' ) && $b_modules && !$gHideModules}
