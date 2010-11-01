@@ -34,7 +34,7 @@
 				<div class="row">
 					{formlabel label="Home page" for="bit_index"}
 					{forminput}
-						<select name="bit_index" id="bit_index">
+						<select class="selectInput" name="bit_index" id="bit_index">
 							<option value="my_page"{if $gBitSystem->getConfig('bit_index') eq 'my_page'} selected="selected"{/if}>{tr}My {$gBitSystem->getConfig('site_title')} Page{/tr}</option>
 							<option value="user_home"{if $gBitSystem->getConfig('bit_index') eq 'user_home'} selected="selected"{/if}>{tr}User's homepage{/tr}</option>
 							<option value="group_home"{if $gBitSystem->getConfig('bit_index') eq 'group_home'} selected="selected"{/if}>{tr}Group home{/tr}</option>
@@ -58,7 +58,7 @@
 				<div class="row">
 					{formlabel label="URI for custom home" for="site_url_index"}
 					{forminput}
-						<input type="text" id="site_url_index" name="site_url_index" value="{$gBitSystem->getConfig('site_url_index')|escape}" size="50" />
+						<input class="textInput" type="text" id="site_url_index" name="site_url_index" value="{$gBitSystem->getConfig('site_url_index')|escape}" size="50" />
 						{formhelp note="Use a specific URI to direct users to a particular page when accessing your site. Can be used to have an introductory page.<br />To activate this, please select <em>Custom home</em> above."}
 					{/forminput}
 				</div>
@@ -78,7 +78,7 @@
 				<div class="row">
 					{formlabel label="Long date" for="site_long_date_format"}
 					{forminput}
-						<input type="text" name="site_long_date_format" id="site_long_date_format" value="{$gBitSystem->getConfig('site_long_date_format')|escape}" size="50"/>
+						<input class="textInput" type="text" name="site_long_date_format" id="site_long_date_format" value="{$gBitSystem->getConfig('site_long_date_format')|escape}" size="50"/>
 						{formhelp note="Default: %A %d of %B, %Y"}
 					{/forminput}
 				</div>
@@ -86,7 +86,7 @@
 				<div class="row">
 					{formlabel label="Short date" for="site_short_date_format"}
 					{forminput}
-						<input type="text" name="site_short_date_format" id="site_short_date_format" value="{$gBitSystem->getConfig('site_short_date_format')|escape}" size="50"/>
+						<input class="textInput" type="text" name="site_short_date_format" id="site_short_date_format" value="{$gBitSystem->getConfig('site_short_date_format')|escape}" size="50"/>
 						{formhelp note="Default: %d %b %Y"}
 					{/forminput}
 				</div>
@@ -94,7 +94,7 @@
 				<div class="row">
 					{formlabel label="Long time" for="site_long_time_format"}
 					{forminput}
-						<input type="text" name="site_long_time_format" id="site_long_time_format" value="{$gBitSystem->getConfig('site_long_time_format')|escape}" size="50"/>
+						<input class="textInput" type="text" name="site_long_time_format" id="site_long_time_format" value="{$gBitSystem->getConfig('site_long_time_format')|escape}" size="50"/>
 						{formhelp note="Default: %H:%M:%S %Z"}
 					{/forminput}
 				</div>
@@ -102,7 +102,7 @@
 				<div class="row">
 					{formlabel label="Short time" for="site_short_time_format"}
 					{forminput}
-						<input type="text" name="site_short_time_format" id="site_short_time_format" value="{$gBitSystem->getConfig('site_short_time_format')|escape}" size="50"/>
+						<input class="textInput" type="text" name="site_short_time_format" id="site_short_time_format" value="{$gBitSystem->getConfig('site_short_time_format')|escape}" size="50"/>
 						{formhelp note="Default: %H:%M %Z"}
 					{/forminput}
 				</div>
@@ -110,14 +110,14 @@
 				<div class="row">
 					{formlabel label="Long date and time" for="site_long_datetime_format"}
 					{forminput}
-						<input type="text" name="site_long_datetime_format" id="site_long_datetime_format" value="{$gBitSystem->getConfig('site_long_datetime_format')|escape}" size="50"/>
+						<input class="textInput" type="text" name="site_long_datetime_format" id="site_long_datetime_format" value="{$gBitSystem->getConfig('site_long_datetime_format')|escape}" size="50"/>
 						{formhelp note="Default: %A %d of %B, %Y (%H:%M:%S %Z)"}
 					{/forminput}
 				</div>
 				<div class="row">
 					{formlabel label="Short date and time" for="site_short_datetime_format"}
 					{forminput}
-						<input type="text" name="site_short_datetime_format" id="site_short_datetime_format" value="{$gBitSystem->getConfig('site_short_datetime_format')|escape}" size="50"/>
+						<input class="textInput" type="text" name="site_short_datetime_format" id="site_short_datetime_format" value="{$gBitSystem->getConfig('site_short_datetime_format')|escape}" size="50"/>
 						{formhelp note="Default: %a %d of %b, %Y (%H:%M %Z)"}
 					{/forminput}
 				</div>
@@ -172,7 +172,7 @@
 	{/jstabs}
 
 	<div class="buttonHolder row submit">
-		<input type="submit" name="change_prefs" value="{tr}Change preferences{/tr}" />
+		<input class="button" type="submit" name="change_prefs" value="{tr}Change preferences{/tr}" />
 	</div>
 {/form}
 {/strip}

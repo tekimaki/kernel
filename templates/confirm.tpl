@@ -26,8 +26,8 @@
 				</div>
 
 				<div class="buttonHolder row submit">
-					<input type="button" name="cancel" {$backJavascript} value="{tr}Cancel{/tr}" /> &nbsp;
-					<input type="submit" name="confirm" value="{tr}Yes{/tr}" />
+					<input class="button" type="button" name="cancel" {$backJavascript} value="{tr}Cancel{/tr}" /> &nbsp;
+					<input class="button" type="submit" name="confirm" value="{tr}Yes{/tr}" />
 				</div>
 			{/box}
 		{/form}

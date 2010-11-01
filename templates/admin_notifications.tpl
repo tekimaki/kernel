@@ -14,7 +14,7 @@
 			<div class="row">
 				{formlabel label="Event" for="event"}
 				{forminput}
-					<select name="event" id="event">
+					<select class="selectInput" name="event" id="event">
 						{foreach from=$events key=ename item=etext}
 							<option value="{$ename}">{$etext}</option>
 						{/foreach}
@@ -26,7 +26,7 @@
 			<div class="row">
 				{formlabel label="Email address" for="femail"}
 				{forminput}
-					<input type="text" id="femail" name="email" />
+					<input class="textInput" type="text" id="femail" name="email" />
 					<br />
 					<a href="#" onclick="javascript:document.getElementById('femail').value='{$cuser_mail}'">{tr}use your email{/tr}</a>
 					<br />
@@ -35,7 +35,7 @@
 			</div>
 
 			<div class="buttonHolder row submit">
-				<input type="submit" name="add" value="{tr}Add{/tr}" />
+				<input class="button" type="submit" name="add" value="{tr}Add{/tr}" />
 			</div>
 		{/form}
 

@@ -4,7 +4,7 @@
 <div class="row">
 	{formlabel label="Title" for="title-$id"}
 	{forminput}
-		<input type="text" name="{$hash_key|default:'file'}[{$id}][title]" id="title-{$id}" size="40" />
+		<input class="textInput" type="text" name="{$hash_key|default:'file'}[{$id}][title]" id="title-{$id}" size="40" />
 	{/forminput}
 </div>
 

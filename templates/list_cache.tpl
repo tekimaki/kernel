@@ -11,8 +11,8 @@
 <tr><td>{tr}Find{/tr}</td>
    <td>
    <form method="get" action="{$smarty.const.THEMES_PKG_URL}list_cache.php">
-     <input type="text" name="find" value="{$find|escape}" />
-     <input type="submit" value="{tr}find{/tr}" name="search" />
+     <input class="textInput" type="text" name="find" value="{$find|escape}" />
+     <input class="button" type="submit" value="{tr}find{/tr}" name="search" />
      <input type="hidden" name="sort_mode" value="{$sort_mode|escape}" />
    </form>
    </td>

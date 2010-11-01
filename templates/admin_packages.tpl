@@ -146,7 +146,7 @@
 			{/legend}
 
 			<div class="buttonHolder row submit">
-				<input type="submit" name="features" value="{tr}Modify Activation{/tr}"/>
+				<input class="button" type="submit" name="features" value="{tr}Modify Activation{/tr}"/>
 			</div>
 		{/jstab}
 

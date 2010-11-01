@@ -55,7 +55,7 @@
 				<div class="row">
 					{formlabel label="Type" for="type"}
 					{forminput}
-						<select name="type" id="type">
+						<select class="selectInput" name="type" id="type">
 							<option value="s" {if $type eq 's'}selected="selected"{/if}>{tr}section{/tr}</option>
 							<option value="o" {if $type eq 'o'}selected="selected"{/if}>{tr}option{/tr}</option>
 						</select>
@@ -66,13 +66,13 @@
 				<div class="row">
 					{formlabel label="Position" for="position"}
 					{forminput}
-						<input type="text" name="position" id="position" value="{$position|escape}" size="5" />
+						<input class="textInput" type="text" name="position" id="position" value="{$position|escape}" size="5" />
 						{formhelp note=""}
 					{/forminput}
 				</div>
 
 				<div class="buttonHolder row submit">
-					<input type="submit" name="save" value="{tr}Save{/tr}" />
+					<input class="button" type="submit" name="save" value="{tr}Save{/tr}" />
 				</div>
 			{/form}
 

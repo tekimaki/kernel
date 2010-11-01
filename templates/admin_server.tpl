@@ -56,7 +56,7 @@
 				</div>
 
 				<div class="buttonHolder row submit">
-					<input type="submit" name="serverTabSubmit" value="{tr}Change preferences{/tr}" />
+					<input class="button" type="submit" name="serverTabSubmit" value="{tr}Change preferences{/tr}" />
 				</div>
 			{/legend}
 		{/jstab}
@@ -125,7 +125,7 @@
 				</div>
 
 				<div class="buttonHolder row submit">
-					<input type="submit" name="serverTabSubmit" value="{tr}Change preferences{/tr}" />
+					<input class="button" type="submit" name="serverTabSubmit" value="{tr}Change preferences{/tr}" />
 				</div>
 			{/legend}
 		{/jstab}
@@ -143,7 +143,7 @@
 				<div class="row">
 					{formlabel label="Message to display when site is closed" for="site_closed_msg"}
 					{forminput}
-						<input type="text" name="site_closed_msg" id="site_closed_msg" value="{$gBitSystem->getConfig('site_closed_msg')|escape}" size="50" />
+						<input class="textInput" type="text" name="site_closed_msg" id="site_closed_msg" value="{$gBitSystem->getConfig('site_closed_msg')|escape}" size="50" />
 					{/forminput}
 				</div>
 
@@ -158,19 +158,19 @@
 				<div class="row">
 					{formlabel label="Max average server load threshold in the last minute" for="site_load_threshold"}
 					{forminput}
-						<input type="text" name="site_load_threshold" id="site_load_threshold" value="{$gBitSystem->getConfig('site_load_threshold')}" size="5" />
+						<input class="textInput" type="text" name="site_load_threshold" id="site_load_threshold" value="{$gBitSystem->getConfig('site_load_threshold')}" size="5" />
 					{/forminput}
 				</div>
 
 				<div class="row">
 					{formlabel label="Message to display when server is too busy" for="site_busy_msg"}
 					{forminput}
-						<input type="text" name="site_busy_msg" id="site_busy_msg" value="{$gBitSystem->getConfig('site_busy_msg')}" size="50" />
+						<input class="textInput" type="text" name="site_busy_msg" id="site_busy_msg" value="{$gBitSystem->getConfig('site_busy_msg')}" size="50" />
 					{/forminput}
 				</div>
 
 				<div class="buttonHolder row submit">
-					<input type="submit" name="siteTabSubmit" value="{tr}Change preferences{/tr}" />
+					<input class="button" type="submit" name="siteTabSubmit" value="{tr}Change preferences{/tr}" />
 				</div>
 			{/legend}
 		{/jstab}
@@ -187,19 +187,19 @@
 				<div class="row">
 					{formlabel label="Proxy Host" for="site_proxy_host"}
 					{forminput}
-						<input type="text" name="site_proxy_host" id="site_proxy_host" value="{$gBitSystem->getConfig('site_proxy_host')|escape}" size="50" />
+						<input class="textInput" type="text" name="site_proxy_host" id="site_proxy_host" value="{$gBitSystem->getConfig('site_proxy_host')|escape}" size="50" />
 					{/forminput}
 				</div>
 
 				<div class="row">
 					{formlabel label="Proxy port" for="site_proxy_port"}
 					{forminput}
-						<input type="text" name="site_proxy_port" id="site_proxy_port" value="{$gBitSystem->getConfig('site_proxy_port')|escape}" size="50" />
+						<input class="textInput" type="text" name="site_proxy_port" id="site_proxy_port" value="{$gBitSystem->getConfig('site_proxy_port')|escape}" size="50" />
 					{/forminput}
 				</div>
 
 				<div class="buttonHolder row submit">
-					<input type="submit" name="proxyTabSubmit" value="{tr}Change preferences{/tr}" />
+					<input class="button" type="submit" name="proxyTabSubmit" value="{tr}Change preferences{/tr}" />
 				</div>
 			{/legend}
 		{/jstab}
