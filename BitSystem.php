@@ -1412,8 +1412,10 @@ class BitSystem extends BitBase {
 
 	function getPackagesConfig( $pForce = FALSE ){
 		if( empty( $this->mPackagesConfig ) || $pForce ){
-			$query = "SELECT guid as guid_key, guid, version, homeable, active, required, dir, name, description FROM `".BIT_DB_PREFIX."packages` p";
-			if( $result = $this->mDb->getAssoc( $query ) ){
+			$query = "SELECT guid as guid_key, guid, version, homeable, active, required, dir, name, description 
+						FROM `".BIT_DB_PREFIX."packages` p
+						WHERE p.`active` = ?";
+			if( $result = $this->mDb->getAssoc( $query, array('y') ) ){
 				$this->mPackagesConfig = &$result;
 			}
 		}
@@ -1422,8 +1424,10 @@ class BitSystem extends BitBase {
 
 	function getPackageConfig( $pPackage, $pForce = FALSE ){
 		if( empty( $this->mPackagesConfig[$pPackage] ) || $pForce ){
-			$query = "SELECT * FROM `".BIT_DB_PREFIX."packages` WHERE guid = ?";
-			if( $result = $this->mDb->query( $query, array( $pPackage ) ) ){
+			$query = "SELECT p.* 
+						FROM `".BIT_DB_PREFIX."packages` p 
+						WHERE p.`guid` = ? AND p.`active` = ?";
+			if( $result = $this->mDb->query( $query, array( $pPackage, 'y' ) ) ){
 				if( $row = $result->fetchRow() ){
 					$this->mPackagesConfig[$pPackage] = $row;
 				}
@@ -1644,8 +1648,12 @@ class BitSystem extends BitBase {
 	// @TODO maybe all should load on first call
 	function loadPackagePluginHandlers( $pAPIType = NULL, $pAPIGuid = NULL ){
 		$ret = $bindVars = array();
-		$query = "SELECT ppam.*, pp.guid, pp.package_guid, pp.path_type, pp.handler_file, pp.active FROM `package_plugins_api_map` ppam 
-			INNER JOIN `package_plugins` pp ON ( ppam.`plugin_guid` = pp.`guid` ) WHERE pp.`active` = ?";
+		$query = "SELECT ppam.*, pp.guid, pp.package_guid, pp.path_type, pp.handler_file, pp.active 
+					FROM `package_plugins_api_map` ppam 
+					INNER JOIN `package_plugins` pp ON ( ppam.`plugin_guid` = pp.`guid` ) 
+					INNER JOIN `packages` p ON p.`guid` = pp.`package_guid`
+					WHERE pp.`active` = ? AND p.`active` = ?";
+		$bindVars[] = 'y';
 		$bindVars[] = 'y';
 		if( !empty( $pAPIType ) ){
 			$query .= " AND ppam.`api_type` = ?";
@@ -1671,8 +1679,11 @@ class BitSystem extends BitBase {
 
 	function loadPackagePluginsConfig( $pForce = FALSE ){
 		if( empty( $this->mPackagePluginsConfig ) || $pForce ){
-			$query = "SELECT guid as guid_key, guid, package_guid, version, active, required, path_type, handler_file, name, description FROM `".BIT_DB_PREFIX."package_plugins` pp";
-			if( $result = $this->mDb->getAssoc( $query ) ){
+			$query = "SELECT pp.`guid` as guid_key, pp.`guid`, pp.`package_guid`, pp.`version`, pp.`active`, pp.`required`, pp.`path_type`, pp.`handler_file`, pp.`name`, pp.`description` 
+						FROM `".BIT_DB_PREFIX."package_plugins` pp 
+						INNER JOIN `packages` p ON p.`guid` = pp.`package_guid`
+						WHERE pp.`active` = ? AND p.`active` = ?";
+			if( $result = $this->mDb->getAssoc( $query, array( 'y', 'y' ) ) ){
 				$this->mPackagePluginsConfig = &$result;
 			}
 			// load up the handlers too
