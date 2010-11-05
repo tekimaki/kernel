@@ -26,6 +26,7 @@ if( !empty( $_REQUEST["page"] )) {
 			// handle a few special cases for page requests
 			case 'features':
 			case 'packages':
+			case 'packageplugins':
 			case 'general':
 			case 'server':
 				$package = 'kernel';
