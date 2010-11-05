@@ -21,18 +21,45 @@
 						{biticon iname="large/dialog-warning" iexplain="Warning"} {tr}You seem to have at least one package plugin that can be upgraded.{/tr} <a href="{$smarty.const.INSTALL_PKG_URL}install.php?step=4">{tr}We recommend you visit the installer now{/tr}</a>.
 					</p>
 
-					{foreach from=$upgradable item=plugin key=guid}
-						<div class="row">
-							<div class="formlabel">
-								<label for="plugin_{$guid}">{biticon ipackage=$guid iname="pkg_`$guid`" iexplain="$plugin.name" iforce=icon}</label>
+					{foreach from=$gBitSystem->mPackagesSchemas key=package item=item}
+						{if !empty($item.plugins)}
+							{assign var=hasPluginUpgrade value=0}
+							{if $item.plugins}
+								{foreach from=$item.plugins key=plugin_guid item=plugin}
+									{if $upgradable.$plugin_guid}
+										{assign var=hasPluginUpgrade value=1}
+									{/if}
+								{/foreach}
+							{/if}
+							{if $hasPluginUpgrade}
+							<div class="row">
+								<div class="formlabel">
+									<label for="{$package}">
+										{biticon ipackage=$package iname="pkg_$package" iexplain=`$package`}
+									</label>
+								</div>
+								{forminput}
+									<div><strong>{$item.name} Package Plugins</strong></div>
+									<ul>
+									{foreach from=$item.plugins key=plugin_guid item=plugin}
+										{if $upgradable.$plugin_guid}
+											<li>
+												<label>
+												{if $plugin.required}
+													{biticon iname=dialog-ok iexplain="Required"}&nbsp;
+												{/if}
+												<strong>{$plugin.name|default:$plugin_guid|capitalize}</strong></label>
+												<div class="formhelp" >
+												<strong>Current Version</strong>: {$upgradable.$plugin_guid.info.version}<br />
+												<strong>Upgrade Version</strong>: {$upgradable.$plugin_guid.info.upgrade}<br />
+											</li>
+										{/if}
+									{/foreach}
+									</ul>
+								{/forminput}
 							</div>
-							{forminput}
-								<label>
-									<strong>{$plugin.name}</strong>
-								</label>
-								{include file="bitpackage:kernel/package_help_inc.tpl" package=$gBitSystem->mPackagesSchemas.$guid}
-							{/forminput}
-						</div>
+							{/if}
+						{/if}
 					{/foreach}
 				{/legend}
 				{/if}

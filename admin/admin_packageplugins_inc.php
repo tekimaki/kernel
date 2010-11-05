@@ -29,7 +29,7 @@ $gBitSystem->configAllPackages();
 // $gBitSmarty->assign( 'requirementsMap', $gBitSystem->drawRequirementsGraph( TRUE, 'cmapx' ));
 
 // Package updates
-// $gBitSmarty->assign( 'upgradable', $gBitSystem->getUpgradablePlugins() );
+$gBitSmarty->assign( 'upgradable', $gBitSystem->getUpgradablePlugins() );
 
 // So packages will be listed in alphabetical order
 ksort( $gBitSystem->mPackagePluginsConfig );
