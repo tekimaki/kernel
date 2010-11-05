@@ -2358,6 +2358,31 @@ class BitSystem extends BitBase {
 		}
 		return $ret;
 	}
+	
+	/**
+	 * storePluginVersion will store the version number of a given package
+	 * 
+	 * @param array $pPlugin Name of plugin - if not given, bitweaver_version will be stored
+	 * @param array $pVersion Version number
+	 * @access public
+	 * @return TRUE on success, FALSE on failure
+	 */
+	function storePluginVersion( $pPlugin= NULL, $pVersion ) {
+		global $gBitSystem;
+		$ret = FALSE;
+		if( !empty( $pVersion ) && $this->validateVersion( $pVersion )) {
+			if( empty( $pPlugin )) {
+				$gBitSystem->storeConfig( "bitweaver_version", $pVersion, 'kernel' );
+				$ret = TRUE;
+			} elseif( !empty( $gBitSystem->mPackagePluginsConfig[$pPlugin] )) {
+				$config = $this->getPluginConfig( $pPlugin );
+				$config['version'] = $pVersion; 
+				$this->storePlugin( $config );
+				$ret = TRUE;
+			}
+		}
+		return $ret;
+	}
 
 	/**
 	 * getVersion will fetch the version number of a given package
@@ -2430,6 +2455,7 @@ class BitSystem extends BitBase {
 	 */
 	function getPluginVersion( $pPlugin = NULL, $pDefault = '0.0.0' ) {
 		global $gBitSystem;
+		$this->loadPackagePluginsConfig();
 		if( empty( $pPlugin )) {
 			$config = 'bitweaver_version';
 			return $gBitSystem->getConfig( 'bitweaver_version', $pDefault );
