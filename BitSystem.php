@@ -2427,8 +2427,7 @@ class BitSystem extends BitBase {
 		foreach( $schemas as $pkgGuid => $pkg ){
 			if( !empty( $pkg['plugins'] ) ){
 				foreach( $pkg['plugins'] as $guid => $plugin ) {
-					if( $this->isPackagePluginActive( $guid ) ){
-						vd( $guid );
+					if( $this->isPackagePluginActive( $guid ) ){ //@TODO there is a bug in isPluginInstalled -- replace this when that is fixed
 						// gracefully deal with plugins which have failed to specify a version
 						$plugin['version'] = is_null($plugin['version'])?'0.0.0':$plugin['version'];
 
