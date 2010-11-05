@@ -1677,13 +1677,13 @@ class BitSystem extends BitBase {
 		return $ret;
 	}
 
-	// === loadPackagePluginsConfig
+	// === getPackagePluginsConfig
 	/**
-	 * loads the configuration of ONLY active packages
+	 * gets the configuration of ONLY active packages
 	 * and puts it in mPackagePluginsConfig
 	 * @param $pForce forces a reload
 	 */
-	function loadPackagePluginsConfig( $pForce = FALSE ){
+	function getPackagePluginsConfig( $pForce = FALSE ){
 		if( empty( $this->mPackagePluginsConfig ) || $pForce ){
 			$query = "SELECT pp.`guid` as guid_key, pp.`guid`, pp.`package_guid`, pp.`version`, pp.`active`, pp.`required`, pp.`path_type`, pp.`handler_file`, pp.`name`, pp.`description` 
 						FROM `".BIT_DB_PREFIX."package_plugins` pp 
@@ -1700,6 +1700,15 @@ class BitSystem extends BitBase {
 		return $this->mPackagePluginsConfig;
 	}
 
+	function loadPackagePluginsConfig( $pForce = FALSE ){
+		$this->getPackagePluginsConfig( $pForce );
+	}
+
+	// === getInstalledPackagePlugins
+	/**
+	 * this is slighly different than getPackagePluginsConfig
+	 * it returns all installed packages, whether active or not
+	 */
 	function getInstalledPackagePlugins(){
 		$query = "SELECT pp.`guid` as guid_key, pp.`guid`, pp.`package_guid`, pp.`version`, pp.`active`, pp.`required`, pp.`path_type`, pp.`handler_file`, pp.`name`, pp.`description` 
 					FROM `".BIT_DB_PREFIX."package_plugins` pp"; 
@@ -2405,6 +2414,31 @@ class BitSystem extends BitBase {
 					'version' => $pkg['version'],
 					'upgrade' => $schemas[$guid]['version']
 				);
+			}
+		}
+		return $ret;
+	}
+
+	function getUpgradablePlugins(){
+		$ret = array();
+		$config = $this->getPackagePluginsConfig();
+		$schemas = $this->getPackagesSchemas();
+		foreach( $schemas as $pkgGuid => $pkg ){
+			if( !empty( $pkg['plugins'] ) ){
+				foreach( $pkg['plugins'] as $guid => $plugin ) {
+					if( $this->isPluginInstalled( $guid ) ){
+					// gracefully deal with plugins which have failed to specify a version
+					$plugin['version'] = is_null($plugin['version'])?'0.0.0':$plugin['version'];
+
+					if( version_compare( $config[$guid]['version'], $plugin['version'], "<" )) {
+						$ret[$guid] = $config[$guid];
+						$ret[$guid]['info'] = array(
+							'version' => $config[$guid]['version'],
+							'upgrade' => $plugin['version']
+						);
+					}
+					}
+				}
 			}
 		}
 		return $ret;
