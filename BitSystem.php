@@ -2403,7 +2403,7 @@ class BitSystem extends BitBase {
 		}
 		return(( $ret == '0.0.0' ) ? FALSE : $ret );
 	}
-
+	
 	function getUpgradablePackages(){
 		$ret = array();
 		$config = $this->getPackagesConfig();
@@ -2418,6 +2418,25 @@ class BitSystem extends BitBase {
 			}
 		}
 		return $ret;
+	}
+	
+	/**
+	 * getPluginVersion will fetch the version number of a given plugin
+	 * 
+	 * @param array $pPlugin Name of plugin - if not given, bitweaver_version will be stored
+	 * @param array $pVersion Version number
+	 * @access public
+	 * @return version number on success
+	 */
+	function getPluginVersion( $pPlugin = NULL, $pDefault = '0.0.0' ) {
+		global $gBitSystem;
+		if( empty( $pPlugin )) {
+			$config = 'bitweaver_version';
+			return $gBitSystem->getConfig( 'bitweaver_version', $pDefault );
+		} elseif( !empty( $this->mPackagePluginsConfig[$pPlugin] ) ){
+			return $this->mPackagePluginsConfig	[$pPlugin]['version'];
+		}
+		return NULL;
 	}
 	
 	function getUpgradablePlugins(){
