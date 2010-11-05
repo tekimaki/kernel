@@ -1677,6 +1677,12 @@ class BitSystem extends BitBase {
 		return $ret;
 	}
 
+	// === loadPackagePluginsConfig
+	/**
+	 * loads the configuration of ONLY active packages
+	 * and puts it in mPackagePluginsConfig
+	 * @param $pForce forces a reload
+	 */
 	function loadPackagePluginsConfig( $pForce = FALSE ){
 		if( empty( $this->mPackagePluginsConfig ) || $pForce ){
 			$query = "SELECT pp.`guid` as guid_key, pp.`guid`, pp.`package_guid`, pp.`version`, pp.`active`, pp.`required`, pp.`path_type`, pp.`handler_file`, pp.`name`, pp.`description` 
@@ -1694,6 +1700,13 @@ class BitSystem extends BitBase {
 		return $this->mPackagePluginsConfig;
 	}
 
+	function getInstalledPackagePlugins(){
+		$query = "SELECT pp.`guid` as guid_key, pp.`guid`, pp.`package_guid`, pp.`version`, pp.`active`, pp.`required`, pp.`path_type`, pp.`handler_file`, pp.`name`, pp.`description` 
+					FROM `".BIT_DB_PREFIX."package_plugins` pp"; 
+		$ret = $this->mDb->getAssoc( $query );
+		return $ret;
+	}
+
 	// === isPackagePluginActive
 	/**
 	 * check's if a package plugin is active.
@@ -1709,7 +1722,7 @@ class BitSystem extends BitBase {
 		if( empty( $this->mPackagesConfig[$pPluginGuid] ) ){
 			$this->getPackageConfig( $pPluginGuid, TRUE );
 		}
-		return !empty( $this->mPackagePluginsConfig[$pPluginGuid][$pProperty] )?$this->mPackagesConfig[$pPluginGuid][$pProperty]:NULL;
+		return !empty( $this->mPackagePluginsConfig[$pPluginGuid][$pProperty] )?$this->mPackagePluginsConfig[$pPluginGuid][$pProperty]:NULL;
 	}
 
 
