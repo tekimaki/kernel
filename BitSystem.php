@@ -1625,6 +1625,7 @@ class BitSystem extends BitBase {
 	 * @return boolean
 	 * @access public
 	 */
+	// @TODO this is a little problematic - its adding inactive plugins to config and config in places is expected to only carry active plugins
 	function isPluginInstalled( $pPackagePluginGuid ){
 		return !is_null( $this->getPluginConfig( $pPackagePluginGuid ) );
 	}
@@ -2426,17 +2427,18 @@ class BitSystem extends BitBase {
 		foreach( $schemas as $pkgGuid => $pkg ){
 			if( !empty( $pkg['plugins'] ) ){
 				foreach( $pkg['plugins'] as $guid => $plugin ) {
-					if( $this->isPluginInstalled( $guid ) ){
-					// gracefully deal with plugins which have failed to specify a version
-					$plugin['version'] = is_null($plugin['version'])?'0.0.0':$plugin['version'];
+					if( $this->isPackagePluginActive( $guid ) ){
+						vd( $guid );
+						// gracefully deal with plugins which have failed to specify a version
+						$plugin['version'] = is_null($plugin['version'])?'0.0.0':$plugin['version'];
 
-					if( version_compare( $config[$guid]['version'], $plugin['version'], "<" )) {
-						$ret[$guid] = $config[$guid];
-						$ret[$guid]['info'] = array(
-							'version' => $config[$guid]['version'],
-							'upgrade' => $plugin['version']
-						);
-					}
+						if( version_compare( $config[$guid]['version'], $plugin['version'], "<" )) {
+							$ret[$guid] = $config[$guid];
+							$ret[$guid]['info'] = array(
+								'version' => $config[$guid]['version'],
+								'upgrade' => $plugin['version']
+							);
+						}
 					}
 				}
 			}
