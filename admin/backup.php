@@ -15,7 +15,7 @@ $gBitSystem->verifyPermission( 'p_admin' );
 
 global $gBitDbType;
 
-$backupPath = STORAGE_PKG_PATH."backups/$bitdomain";
+$backupPath = STORAGE_PKG_PATH."backups/";
 mkdir_p( $backupPath );
 
 if (isset($_REQUEST["generate"])) {
@@ -74,7 +74,7 @@ if (isset($_REQUEST["upload"])) {
 // And put them in an array with the filemtime of
 // each file activated
 $backups = array();
-$h = opendir( $backupPath.$bitdomain );
+$h = opendir( $backupPath );
 
 while ($file = readdir($h)) {
 	if (strstr($file, "sql")) {
@@ -88,8 +88,6 @@ while ($file = readdir($h)) {
 
 closedir ($h);
 $gBitSmarty->assign_by_ref('backups', $backups);
-$gBitSmarty->assign('bitdomain', $bitdomain);
-
 
 $gBitSystem->display( 'bitpackage:kernel/backup.tpl', tra( 'Backups') , array( 'display_mode' => 'admin' ));
 

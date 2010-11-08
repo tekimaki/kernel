@@ -152,7 +152,7 @@ class BitSystem extends BitBase {
 	 * @access private
 	 */
 	function initSmarty() {
-		global $bitdomain, $_SERVER, $gBitSmarty;
+		global $_SERVER, $gBitSmarty;
 
 		// Set the separator for PHP generated tags to be &amp; instead of &
 		// This is necessary for XHTML compliance
@@ -164,10 +164,6 @@ class BitSystem extends BitBase {
 					$_REQUEST[$k] = stripslashes( $v );
 				}
 			}
-		}
-
-		if( !isset( $bitdomain ) ) {
-			$bitdomain = "";
 		}
 
 		// make sure we only create one BitSmarty
