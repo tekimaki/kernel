@@ -1810,6 +1810,16 @@ class BitSystem extends BitBase {
 		return $ret;
 	}
 
+	function getPluginAPIHandler( $pAPIType, $pAPIGuid, $pPluginGuid ){
+		$handlers = $this->getPackagePluginHandlers( $pAPIType, $pAPIGuid );
+		foreach( $handlers as $handler ){
+			if( $handler['plugin_guid'] == $pPluginGuid ){
+				return $handler;
+			}
+		}
+		return NULL;
+	}
+
 	/// }}}
 
 	/**
