@@ -2376,6 +2376,26 @@ class BitSystem extends BitBase {
 		}
 		return $ret;
 	}
+	
+	/**
+	 * storePluginVersion will store the version number of a given package
+	 * 
+	 * @param array $pPlugin Name of plugin - if not given, bitweaver_version will be stored
+	 * @param array $pVersion Version number
+	 * @access public
+	 * @return TRUE on success, FALSE on failure
+	 */
+	function storePluginVersion( $pPlugin, $pVersion ) {
+		global $gBitSystem;
+		$ret = FALSE;
+		if( !empty( $pVersion ) && $this->validateVersion( $pVersion ) && !empty( $gBitSystem->mPackagePluginsConfig[$pPlugin] )) {
+			$config = $this->getPluginConfig( $pPlugin );
+			$config['version'] = $pVersion; 
+			$this->storePlugin( $config );
+			$ret = TRUE;
+		}
+		return $ret;
+	}
 
 	/**
 	 * getVersion will fetch the version number of a given package
@@ -2421,7 +2441,7 @@ class BitSystem extends BitBase {
 		}
 		return(( $ret == '0.0.0' ) ? FALSE : $ret );
 	}
-
+	
 	function getUpgradablePackages(){
 		$ret = array();
 		$config = $this->getPackagesConfig();
@@ -2436,6 +2456,23 @@ class BitSystem extends BitBase {
 			}
 		}
 		return $ret;
+	}
+	
+	/**
+	 * getPluginVersion will fetch the version number of a given plugin
+	 * 
+	 * @param array $pPlugin Name of plugin - if not given, bitweaver_version will be stored
+	 * @param array $pVersion Version number
+	 * @access public
+	 * @return version number on success
+	 */
+	function getPluginVersion( $pPlugin, $pDefault = '0.0.0' ) {
+		global $gBitSystem;
+		$this->loadPackagePluginsConfig();
+		if( !empty( $this->mPackagePluginsConfig[$pPlugin] ) ){
+			return $this->mPackagePluginsConfig	[$pPlugin]['version'];
+		}
+		return NULL;
 	}
 	
 	function getUpgradablePlugins(){
