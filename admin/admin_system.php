@@ -26,12 +26,10 @@ $diskUsage = array(
 	'modules' => array(
 		'path' => TEMP_PKG_PATH.'modules/cache',
 		'title' => tra( 'Modules' ),
-		'subdir' => $bitdomain,
 	),
 	'cache' => array(
 		'path' => TEMP_PKG_PATH.'cache',
 		'title' => tra( 'System Cache' ),
-		'subdir' => $bitdomain,
 	),
 	'icons' => array(
 		'path' => TEMP_PKG_PATH.'themes/biticon',
