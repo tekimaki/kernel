@@ -1461,6 +1461,9 @@ class BitSystem extends BitBase {
 	}
 
 	function getPackageConfigValue( $pPackage, $pProperty ){
+		if(is_array($pPackage)){
+			$pPackage = $pPackage['name'];
+		}
 		if( empty( $this->mPackagesConfig[$pPackage] ) ){
 			$this->getPackageConfig( $pPackage, TRUE );
 		}
