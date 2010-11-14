@@ -175,15 +175,6 @@ if( $gBitSystem->isDatabaseValid() ) {
 	// this will register and set up the dropdown menus and the application menus in modules
 	require_once( KERNEL_PKG_PATH.'menu_register_inc.php' );
 
-	// added for virtual hosting suport
-	if( !isset( $bitdomain )) {
-		$bitdomain = "";
-	} else {
-		$bitdomain .= "/";
-	}
-	$gBitSystem->storeConfig( 'bitdomain', $bitdomain, KERNEL_PKG_NAME );
-
-	$gBitSmarty->assign( "bitdomain", $bitdomain );
 	// Fix IIS servers not setting what they should set (ay ay IIS, ay ay)
 	if( !isset( $_SERVER['QUERY_STRING'] )) {
 		$_SERVER['QUERY_STRING'] = '';
