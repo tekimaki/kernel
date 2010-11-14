@@ -1041,27 +1041,31 @@ class BitSystem extends BitBase {
 		}
 	}
 
-	function initPackage( $pPkg ) {
+	function initPackage( $pPkg, $registerConfig = TRUE, $scanFiles = TRUE, $initPlugins = TRUE ) {
 		$this->mRegisterCalled = FALSE;
-		$scanFile = BIT_ROOT_PATH.$pPkg['dir'].'/bit_setup_inc.php';
-		$file_exists = 0;
 
-		$registerHash = array(
-			//for auto registered packages Registration Package Name = Package Directory Name
-			'package_name' => $pPkg['guid'],
-			'package_path' => BIT_ROOT_PATH.$pPkg['dir'].'/',
-			'required_package' => $pPkg['required'],
-			'homable' => !empty( $pPkg['homable'] )?TRUE:FALSE,
-		);
-		$this->configPackage( $registerHash );
-
-		if( file_exists( $scanFile ) ) {
-			$file_exists = 1;
-			global $gBitSystem, $gLibertySystem, $gBitSmarty, $gBitUser, $gBitLanguage;
-			$this->mPackageFileName = $scanFile;
-			include_once( $scanFile );
+		if ($registerConfig) {
+			$registerHash = array(
+				//for auto registered packages Registration Package Name = Package Directory Name
+				'package_name' => $pPkg['guid'],
+				'package_path' => BIT_ROOT_PATH.$pPkg['dir'].'/',
+				'required_package' => $pPkg['required'],
+				'homable' => !empty( $pPkg['homable'] )?TRUE:FALSE,
+			);
+			$this->configPackage( $registerHash );
 		}
-		$this->initPackagePlugins( $pPkg['guid'] );
+		if ($scanFiles) {
+			$scanFile = BIT_ROOT_PATH.$pPkg['dir'].'/bit_setup_inc.php';
+			if( file_exists( $scanFile ) ) {
+				$file_exists = 1;
+				global $gBitSystem, $gLibertySystem, $gBitSmarty, $gBitUser, $gBitLanguage;
+				$this->mPackageFileName = $scanFile;
+				include_once( $scanFile );
+			}
+		}
+		if ($initPlugins) {
+			$this->initPackagePlugins( $pPkg['guid'] );
+		}
 	}
 
 	// === scanPackages
@@ -1150,9 +1154,17 @@ class BitSystem extends BitBase {
 				}
 			}
 		}
-		// load the pkgs
+		// load the pkg config.
 		foreach( $loadPkgs as $loadPkg ) {
-			$this->initPackage( $loadPkg );
+			$this->initPackage( $loadPkg,  TRUE, FALSE, FALSE);
+		}
+		// Now scan the setup files.
+		foreach( $loadPkgs as $loadPkg ) {
+			$this->initPackage( $loadPkg,  FALSE, TRUE, FALSE);
+		}
+		// Now load the plugins
+		foreach( $loadPkgs as $loadPkg ) {
+			$this->initPackage( $loadPkg,  FALSE, FALSE, TRUE);
 		}
 	}
 
@@ -1449,6 +1461,9 @@ class BitSystem extends BitBase {
 	}
 
 	function getPackageConfigValue( $pPackage, $pProperty ){
+		if(is_array($pPackage)){
+			$pPackage = $pPackage['name'];
+		}
 		if( empty( $this->mPackagesConfig[$pPackage] ) ){
 			$this->getPackageConfig( $pPackage, TRUE );
 		}
@@ -1796,6 +1811,16 @@ class BitSystem extends BitBase {
 			$ret = TRUE;
 		}
 		return $ret;
+	}
+
+	function getPluginAPIHandler( $pAPIType, $pAPIGuid, $pPluginGuid ){
+		$handlers = $this->getPackagePluginHandlers( $pAPIType, $pAPIGuid );
+		foreach( $handlers as $handler ){
+			if( $handler['plugin_guid'] == $pPluginGuid ){
+				return $handler;
+			}
+		}
+		return NULL;
 	}
 
 	/// }}}
