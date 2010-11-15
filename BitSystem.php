@@ -1648,8 +1648,8 @@ class BitSystem extends BitBase {
 
 	function getPackagePluginHandlers( $pAPIType, $pAPIGuid  ){
 		$ret = NULL;
-		if( empty( $this->mPackagePluginsHandlers[$pAPIType][$pAPIGuid] ) ){
-			$this->loadPackagePluginHandlers( $pAPIType, $pAPIGuid  );
+		if( empty( $this->mPackagePluginsHandlers ) ){
+			$this->loadPackagePluginHandlers();
 		}
 		if( !empty( $this->mPackagePluginsHandlers[$pAPIType][$pAPIGuid] ) ){
 			$ret = $this->mPackagePluginsHandlers[$pAPIType][$pAPIGuid];
@@ -1658,7 +1658,7 @@ class BitSystem extends BitBase {
 	}
 
 	// @TODO maybe all should load on first call
-	function loadPackagePluginHandlers( $pAPIType = NULL, $pAPIGuid = NULL ){
+	function loadPackagePluginHandlers() {
 		$ret = $bindVars = array();
 		$query = "SELECT ppam.*, pp.guid, pp.package_guid, pp.path_type, pp.handler_file, pp.active 
 					FROM `package_plugins_api_map` ppam 
@@ -1667,22 +1667,10 @@ class BitSystem extends BitBase {
 					WHERE pp.`active` = ? AND p.`active` = ?";
 		$bindVars[] = 'y';
 		$bindVars[] = 'y';
-		if( !empty( $pAPIType ) ){
-			$query .= " AND ppam.`api_type` = ?";
-			$bindVars[] = $pAPIType;
-		}
-		if( !empty( $pAPIGuid ) ){
-			$query .= " AND ppam.`api_hook` = ?";
-			$bindVars[] = $pAPIGuid;
-		}
 		if( $rslt = $this->mDb->getArray( $query, $bindVars ) ){
-			if( !empty( $pAPIType ) && !empty( $pAPIGuid ) ){
-				$this->mPackagePluginsHandlers[$pAPIType][$pAPIGuid] = $rslt;
-	 		}else{
-				// sort them
-				foreach( $rslt as $row ){
-					$this->mPackagePluginsHandlers[$row['api_type']][$row['api_hook']][] = $row;
-				}
+			// sort them
+			foreach( $rslt as $row ){
+				$this->mPackagePluginsHandlers[$row['api_type']][$row['api_hook']][] = $row;
 			}
 			$ret = $this->mPackagePluginsHandlers;
 		}
