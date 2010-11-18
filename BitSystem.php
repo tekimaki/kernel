@@ -1727,6 +1727,13 @@ class BitSystem extends BitBase {
 		return $this->mPackagePluginsInstalled;
 	}
 
+	function getInstalledPackagePluginConfigValue( $pPluginGuid, $pProperty ){
+		if( empty( $this->mPackagesPluginsConfig[$pPluginGuid] ) ){
+			$this->getInstalledPackagePlugins();
+		}
+		return !empty( $this->mPackagePluginsInstalled[$pPluginGuid][$pProperty] )?$this->mPackagePluginsInstalled[$pPluginGuid][$pProperty]:NULL;
+	}
+
 	// === isPackagePluginActive
 	/**
 	 * check's if a package plugin is active.
@@ -1744,7 +1751,6 @@ class BitSystem extends BitBase {
 		}
 		return !empty( $this->mPackagePluginsConfig[$pPluginGuid][$pProperty] )?$this->mPackagePluginsConfig[$pPluginGuid][$pProperty]:NULL;
 	}
-
 
 	// }}}
 	
@@ -2470,11 +2476,10 @@ class BitSystem extends BitBase {
 	 */
 	function getPluginVersion( $pPlugin, $pDefault = '0.0.0' ) {
 		global $gBitSystem;
-		$this->loadPackagePluginsConfig();
-		if( !empty( $this->mPackagePluginsConfig[$pPlugin] ) ){
-			return $this->mPackagePluginsConfig	[$pPlugin]['version'];
+		if( !($ret = $this->getInstalledPackagePluginConfigValue( $pPlugin, 'version' )) ){
+			$ret = $pDefault;
 		}
-		return NULL;
+		return $ret;
 	}
 	
 	function getUpgradablePlugins(){
