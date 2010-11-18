@@ -63,11 +63,14 @@ class BitSystem extends BitBase {
 	// Installed Packages
 	var $mPackagesConfig = array();
 
-	// Installed Package Plugins
+	// Active (ONLY) Package Plugins
 	var $mPackagePluginsConfig = array();
+	
+	// Installed Package Plugins
+	var $mPackagePluginsInstalled = array();
 
 	// An array of registered plugin handlers
-	var $mPackagePluginsHandlers;
+	var $mPackagePluginsHandlers = array();
 
 	// Cross Reference Package Directory Name => Package Key used as index into $mPackages
 	var $mPackagesDirNameXref = array();
@@ -1463,6 +1466,13 @@ class BitSystem extends BitBase {
 		return !empty( $this->mPackagesConfig[$pPackage][$pProperty] )?$this->mPackagesConfig[$pPackage][$pProperty]:NULL;
 	}
 
+	function getInstalledPluginConfig( $pPackagePlugin, $pForce = FALSE ){
+		if( empty( $this->mPackagePluginsInstalled[$pPackagePlugin] ) || $pForce ){
+			$this->getInstalledPackagePlugins( $pForce );
+		}
+		return !empty( $this->mPackagePluginsInstalled[$pPackagePlugin] )? $this->mPackagePluginsInstalled[$pPackagePlugin]:NULL;
+	}
+
 	/// }}}
 
 	// {{{=========================== Package Storage Methods ==============================
@@ -1635,7 +1645,7 @@ class BitSystem extends BitBase {
 	 */
 	// @TODO this is a little problematic - its adding inactive plugins to config and config in places is expected to only carry active plugins
 	function isPluginInstalled( $pPackagePluginGuid ){
-		return !is_null( $this->getPluginConfig( $pPackagePluginGuid ) );
+		return !is_null( $this->getInstalledPluginConfig( $pPackagePluginGuid ) );
 	}
 
 
@@ -1706,11 +1716,15 @@ class BitSystem extends BitBase {
 	 * this is slighly different than getPackagePluginsConfig
 	 * it returns all installed packages, whether active or not
 	 */
-	function getInstalledPackagePlugins(){
-		$query = "SELECT pp.`guid` as guid_key, pp.`guid`, pp.`package_guid`, pp.`version`, pp.`active`, pp.`required`, pp.`path_type`, pp.`handler_file`, pp.`name`, pp.`description` 
-					FROM `".BIT_DB_PREFIX."package_plugins` pp"; 
-		$ret = $this->mDb->getAssoc( $query );
-		return $ret;
+	function getInstalledPackagePlugins( $pForce = FALSE ){
+		if( empty( $this->mPackagePluginsInstalled ) || $pForce ){
+			$query = "SELECT pp.`guid` as guid_key, pp.`guid`, pp.`package_guid`, pp.`version`, pp.`active`, pp.`required`, pp.`path_type`, pp.`handler_file`, pp.`name`, pp.`description` 
+						FROM `".BIT_DB_PREFIX."package_plugins` pp"; 
+			if( $ret = $this->mDb->getAssoc( $query ) ){
+				$this->mPackagePluginsInstalled = $ret;
+			}
+		}
+		return $this->mPackagePluginsInstalled;
 	}
 
 	// === isPackagePluginActive
@@ -2376,7 +2390,7 @@ class BitSystem extends BitBase {
 	function storePluginVersion( $pPlugin, $pVersion ) {
 		global $gBitSystem;
 		$ret = FALSE;
-		if( !empty( $pVersion ) && $this->validateVersion( $pVersion ) && !empty( $gBitSystem->mPackagePluginsConfig[$pPlugin] )) {
+		if( !empty( $pVersion ) && $this->validateVersion( $pVersion ) && $gBitSystem->isPluginInstalled($pPlugin) ) {
 			$config = $this->getPluginConfig( $pPlugin );
 			$config['version'] = $pVersion; 
 			$this->storePlugin( $config );
@@ -2470,7 +2484,7 @@ class BitSystem extends BitBase {
 		foreach( $schemas as $pkgGuid => $pkg ){
 			if( !empty( $pkg['plugins'] ) ){
 				foreach( $pkg['plugins'] as $guid => $plugin ) {
-					if( $this->isPackagePluginActive( $guid ) ){ //@TODO there is a bug in isPluginInstalled -- replace this when that is fixed
+					if( $this->isPluginInstalled( $guid ) ){ 
 						// gracefully deal with plugins which have failed to specify a version
 						$plugin['version'] = is_null($plugin['version'])?'0.0.0':$plugin['version'];
 
