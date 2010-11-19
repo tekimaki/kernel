@@ -1180,6 +1180,19 @@ class BitSystem extends BitBase {
 		}
 	}
 
+	function getPackagePluginUrl( $pPlugin ) {
+		$uri = NULL;
+		switch( $pPlugin['path_type'] ){
+		case 'package':
+			$uri = constant( strtoupper( $pPlugin['package_guid'] ).'_PKG_URL' ); 
+			break;
+		case 'config':
+			$uri = CONFIG_PKG_URL.$pPlugin['package_guid'].'/plugins/'.$pPlugin['guid'].'/';
+			break;
+		}
+		return $uri;
+	}
+
 	function getPackagePluginPath( $pPlugin ){
 		$path = NULL;
 		switch( $pPlugin['path_type'] ){
@@ -1616,6 +1629,11 @@ class BitSystem extends BitBase {
 		}
 
 		return $ret;
+	}
+
+	function isPluginActive( $pPluginGuid ) {
+		return ($this->isPluginInstalled($pPluginGuid) &&
+				$this->mPackagePluginsConfig[ $pPluginGuid ]['active'] == 'y');
 	}
 
 	function activatePlugin( $pPluginGuid ){
