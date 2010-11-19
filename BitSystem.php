@@ -1195,6 +1195,10 @@ class BitSystem extends BitBase {
 
 	function getPackagePluginPath( $pPlugin ){
 		$path = NULL;
+		// Did we get the whole config or just a guid?
+		if (!is_array($pPlugin)) {
+			$pPlugin = $this->getPluginConfig($pPlugin);
+		}
 		switch( $pPlugin['path_type'] ){
 		case 'package':
 			$path = constant( strtoupper( $pPlugin['package_guid'] ).'_PKG_PATH' ); 
