@@ -60,8 +60,11 @@ class BitSystem extends BitBase {
 	// DEPRECATED @TODO Delete
 	var $mPackages = array();
 
-	// Installed Packages
+	// Active Packages
 	var $mPackagesConfig = array();
+
+	// Installed Packages
+	var $mPackagesInstalled = array();
 
 	// Active (ONLY) Package Plugins
 	var $mPackagePluginsConfig = array();
@@ -624,7 +627,7 @@ class BitSystem extends BitBase {
 	 * @access public
 	 */
 	function isPackageInstalled( $pPackageGuid ){
-		return !is_null( $this->getPackageConfig( $pPackageGuid ) );
+		return !is_null( $this->getInstalledPackageConfig( $pPackageGuid ) );
 	}
 
 	// === isPackageRequired
@@ -1483,6 +1486,24 @@ class BitSystem extends BitBase {
 		return !empty( $this->mPackagesConfig[$pPackage][$pProperty] )?$this->mPackagesConfig[$pPackage][$pProperty]:NULL;
 	}
 
+	function getInstalledPackages( $pForce = FALSE ){
+		if( empty( $this->mPackagesInstalled ) || $pForce ){
+			$query = "SELECT guid as guid_key, guid, version, homeable, active, required, dir, name, description 
+						FROM `".BIT_DB_PREFIX."packages` p";
+			if( $ret = $this->mDb->getAssoc( $query ) ){
+				$this->mPackagesInstalled = $ret;
+			}
+		}
+		return $this->mPackagesInstalled;
+	}
+
+	function getInstalledPackageConfig( $pPackage, $pForce = FALSE ){
+		if( empty( $this->mPackagesInstalled[$pPackageP] ) || $pForce ){
+			$this->getInstalledPackages( $pForce );
+		}
+		return !empty( $this->mPackagesInstalled[$pPackage] )? $this->mPackagesInstalled[$pPackage]:NULL;
+	}
+
 	function getInstalledPluginConfig( $pPackagePlugin, $pForce = FALSE ){
 		if( empty( $this->mPackagePluginsInstalled[$pPackagePlugin] ) || $pForce ){
 			$this->getInstalledPackagePlugins( $pForce );
@@ -1551,7 +1572,7 @@ class BitSystem extends BitBase {
 
 	function activatePackage( $pPackageGuid ){
 		if( $this->isPackageInstalled( $pPackageGuid ) ){
-			$storeHash = $this->getPackageConfig( $pPackageGuid );
+			$storeHash = $this->getInstalledPackageConfig( $pPackageGuid );
 			$storeHash['active'] = 'y';
 			$this->storePackage( $storeHash );
 		}
@@ -1560,7 +1581,7 @@ class BitSystem extends BitBase {
 
 	function deactivatePackage( $pPackageGuid ){
 		if( $this->isPackageInstalled( $pPackageGuid ) ){
-			$storeHash = $this->getPackageConfig( $pPackageGuid );
+			$storeHash = $this->getInstalledPackageConfig( $pPackageGuid );
 			$storeHash['active'] = 'n';
 			$this->storePackage( $storeHash );
 		}
@@ -2474,7 +2495,7 @@ class BitSystem extends BitBase {
 	
 	function getUpgradablePackages(){
 		$ret = array();
-		$config = $this->getPackagesConfig();
+		$config = $this->getInstalledPackages();
 		$schemas = $this->getPackagesSchemas();
 		foreach( $config as $guid => $pkg ) {
 			if( version_compare( $pkg['version'], $schemas[$guid]['version'], "<" )) {
@@ -2506,22 +2527,20 @@ class BitSystem extends BitBase {
 	
 	function getUpgradablePlugins(){
 		$ret = array();
-		$config = $this->getPackagePluginsConfig();
+		$config = $this->getInstalledPackagePlugins();
 		$schemas = $this->getPackagesSchemas();
 		foreach( $schemas as $pkgGuid => $pkg ){
 			if( !empty( $pkg['plugins'] ) ){
 				foreach( $pkg['plugins'] as $guid => $plugin ) {
-					if( $this->isPluginInstalled( $guid ) ){ 
-						// gracefully deal with plugins which have failed to specify a version
-						$plugin['version'] = is_null($plugin['version'])?'0.0.0':$plugin['version'];
+					// gracefully deal with plugins which have failed to specify a version
+					$plugin['version'] = is_null($plugin['version'])?'0.0.0':$plugin['version'];
 
-						if( version_compare( $config[$guid]['version'], $plugin['version'], "<" )) {
-							$ret[$guid] = $config[$guid];
-							$ret[$guid]['info'] = array(
-								'version' => $config[$guid]['version'],
-								'upgrade' => $plugin['version']
-							);
-						}
+					if( version_compare( $config[$guid]['version'], $plugin['version'], "<" )) {
+						$ret[$guid] = $config[$guid];
+						$ret[$guid]['info'] = array(
+							'version' => $config[$guid]['version'],
+							'upgrade' => $plugin['version']
+						);
 					}
 				}
 			}

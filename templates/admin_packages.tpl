@@ -65,7 +65,7 @@
 
 				{$install_unavailable}
 
-				{foreach key=guid item=package from=$gBitSystem->mPackagesConfig}
+				{foreach key=guid item=package from=$installed}
 					{if !$gBitSystem->mPackagesSchemas.$guid.required}
 						<div class="row">
 							<div class="formlabel">

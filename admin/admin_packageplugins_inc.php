@@ -8,7 +8,7 @@
 if( !empty( $_REQUEST['update_plugins'] ) ) {
 	foreach( $gBitSystem->getInstalledPackagePlugins() as $guid => $item ){
 		// can only change already installed plugins that are not required
-		if( $gBitSystem->isPluginInstalled( $guid ) && $item['required'] != 'y' ) {
+		if( $item['required'] != 'y' ) {
 			if( !empty( $_REQUEST['package_plugins'][$guid] )) {
 				// activate
 				$gBitSystem->activatePlugin( $guid );

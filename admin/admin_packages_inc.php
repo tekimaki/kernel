@@ -10,19 +10,16 @@
 $fPackage = &$_REQUEST['fPackage'];   // emulate register_globals
 
 if( !empty( $_REQUEST['features'] ) ) {
-	$pkgArray = $gBitSystem->mPackagesConfig;
+	$pkgArray = $gBitSystem->getInstalledPackages();
 	foreach( $pkgArray as $pkgKey=>$pkg ) {
-		if( !empty( $pkg['guid'] )) {
-			$pkgName = strtolower( $pkg['guid'] );
-			// can only change already installed packages that are not required
-			if( $gBitSystem->isPackageInstalled( $pkgName ) && $pkg['required'] != 'y' ) {
-				if( !empty( $_REQUEST['fPackage'][$pkgName] )) {
-					// mark installed and active
-					$gBitSystem->activatePackage( $pkgName );
-				} else {
-					// mark installed but not active
-					$gBitSystem->deactivatePackage( $pkgName );
-				}
+		// can only change already installed packages that are not required
+		if( $pkg['required'] != 'y' ) {
+			if( !empty( $_REQUEST['fPackage'][$pkgKey] )) {
+				// mark installed and active
+				$gBitSystem->activatePackage( $pkgKey );
+			} else {
+				// mark installed but not active
+				$gBitSystem->deactivatePackage( $pkgKey );
 			}
 		}
 	}
@@ -39,6 +36,7 @@ $gBitSmarty->assign( 'requirementsMap', $gBitSystem->drawRequirementsGraph( TRUE
 // Package updates
 $gBitSmarty->assign( 'newrequired', $gBitSystem->getNewRequiredPackages() );
 $gBitSmarty->assign( 'upgradable', $gBitSystem->getUpgradablePackages() );
+$gBitSmarty->assign( 'installed', $gBitSystem->getInstalledPackages() );
 
 // So packages will be listed in alphabetical order
 ksort( $gBitSystem->mPackagesConfig );
