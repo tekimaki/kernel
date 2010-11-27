@@ -68,6 +68,7 @@
 
 		{jstab title="Installed"}
 			{legend legend="Packages installed on your system"}
+				<p>{tr}You can control the display order of plugin template includes by sorting them. <a href="{$smarty.const.KERNEL_PKG_URL}admin/index.php?page=sort_packageplugins">{tr}Sort package plugins{/tr}</a>{/tr}</p>
 				<p>
 					{tr}Packages with checkmarks are currently enabled, packages without are disabled.  To enable or disable a package, check or uncheck it, and click the 'Modify Activation' button.{/tr} <a href='{$smarty.const.INSTALL_PKG_URL}install.php?step=3'>{tr}To uninstall or reinstall a package, visit the installer.{/tr}</a>
 				</p>
