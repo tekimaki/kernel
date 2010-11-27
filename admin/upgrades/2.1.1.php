@@ -32,10 +32,5 @@ array( 'DATADICT' => array(
 			'pos' => array( '`pos`', 'SET NOT NULL' ),
 		),
 	)),
-	array( 'ALTER' => array(
-		'package_plugins' => array(
-			'pos' => array( '`pos`', 'SET DEFAULT \'1\'' ),
-		),
-	)),
 )),
 ));

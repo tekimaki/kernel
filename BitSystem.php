@@ -2415,16 +2415,11 @@ class BitSystem extends BitBase {
 	function storeVersion( $pPackage = NULL, $pVersion ) {
 		global $gBitSystem;
 		$ret = FALSE;
-		if( !empty( $pVersion ) && $this->validateVersion( $pVersion )) {
-			if( empty( $pPackage )) {
-				$gBitSystem->storeConfig( "bitweaver_version", $pVersion, 'kernel' );
-				$ret = TRUE;
-			} elseif( !empty( $gBitSystem->mPackages[$pPackage] )) {
-				$config = $this->getPackageConfig( $pPackage );
-				$config['version'] = $pVersion; 
-				$this->storePackage( $config );
-				$ret = TRUE;
-			}
+		if( !empty( $pVersion ) && $this->validateVersion( $pVersion ) && $this->isPackageInstalled( $pPackage )) {
+			$config = $this->getInstalledPackageConfig( $pPackage );
+			$config['version'] = $pVersion; 
+			$this->storePackage( $config );
+			$ret = TRUE;
 		}
 		return $ret;
 	}
@@ -3114,33 +3109,36 @@ class BitSystem extends BitBase {
 	 */
 	function upgradeKernel(){
 		if( is_file( INSTALL_PKG_PATH.'BitInstaller.php' ) && is_readable( INSTALL_PKG_PATH.'BitInstaller.php' ) ){
-			if( $this->getConfig( 'package_kernel' ) ){
-				if( version_compare( $this->getConfig( 'package_kernel_version' ), '2.1.1', "<" ) ) {
-					define( 'AUTO_UPDATE_KERNEL', TRUE );
-					include_once( INSTALL_PKG_PATH.'BitInstaller.php' );
-					global $gBitInstaller;
-					$gBitInstaller = new BitInstaller();
+			define( 'AUTO_UPDATE_KERNEL', TRUE );
+			include_once( INSTALL_PKG_PATH.'BitInstaller.php' );
+			global $gBitInstaller;
+			$gBitInstaller = new BitInstaller();
 
-					$dir = KERNEL_PKG_PATH.'admin/upgrades/';
-					$upDir = opendir( $dir );
-					while( FALSE !== ( $file = readdir( $upDir ))) {
-						if( is_file( $dir.$file )) {
-							$upVersion = str_replace( ".php", "", $file );
-							// we only want to load files of versions that are greater than is installed
-							if( $gBitInstaller->validateVersion( $upVersion ) && version_compare( $gBitInstaller->getVersion( 'kernel' ), $upVersion, '<' )) {
-								include_once( $dir.$file );
-							}
-						}
+			$dir = KERNEL_PKG_PATH.'admin/upgrades/';
+			$upDir = opendir( $dir );
+			while( FALSE !== ( $file = readdir( $upDir ))) {
+				if( is_file( $dir.$file )) {
+					$upVersion = str_replace( ".php", "", $file );
+					// we only want to load files of versions that are greater than is installed
+					// special switch for pre 2.1.0 system
+					if( $this->getConfig( 'package_kernel_version' ) ){
+						$currVersion = $gBitInstaller->getVersion( 'kernel' );
 					}
-
-					if( $errors = $gBitInstaller->upgradePackageVersions('kernel') ){
-						// upgrade successful - continue
-						error_log( 'Auto Kernel Upgrade: '.implode( $errors ) );
-					}else{
-						// yay!
-						return;
+					else{
+						$currVersion = $this->getPackageConfigValue( 'kernel', 'version' ); 
+					}
+					if( $gBitInstaller->validateVersion( $upVersion ) && version_compare( $currVersion, $upVersion, '<' )) {
+						include_once( $dir.$file );
 					}
 				}
+			}
+
+			if( $errors = $gBitInstaller->upgradePackageVersions('kernel') ){
+				// upgrade successful - continue
+				error_log( 'Auto Kernel Upgrade: '.implode( $errors ) );
+			}else{
+				// yay!
+				return;
 			}
 		}
 
