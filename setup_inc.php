@@ -104,7 +104,7 @@ global $gBitUser, $gTicket, $userlib, $gBitDbType;
 
 if( $gBitSystem->isDatabaseValid() ) {
 	$gBitSystem->loadConfig();
-	// @TODO temp kernel 2.1.0 upgrade - hate having this here, maybe can go somewhere else
+	// @TODO temp kernel 2.1.1 upgrade - hate having this here, maybe can go somewhere else
 	if( $gBitSystem->getConfig( 'package_kernel' ) ){
 		$gBitSystem->upgradeKernel();
 	}

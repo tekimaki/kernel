@@ -1640,6 +1640,7 @@ class BitSystem extends BitBase {
 			$pParamHash['plugin_store']['description'] = !empty( $pParamHash['description'] )?$pParamHash['description']:NULL;
 			$pParamHash['plugin_store']['path_type'] = !empty( $path_type )?$path_type:'package'; 		// if no path_type set we assume it came with the package
 			$pParamHash['plugin_store']['handler_file'] = $pParamHash['handler_file'];
+			$pParamHash['plugin_store']['pos'] = !empty( $pParamHash['pos'] )?$pParamHash['pos']:'1';
 		}
 
 		return( count( $this->mErrors )== 0 );
@@ -1710,11 +1711,11 @@ class BitSystem extends BitBase {
 	// @TODO maybe all should load on first call
 	function loadPackagePluginHandlers() {
 		$ret = $bindVars = array();
-		$query = "SELECT ppam.*, pp.guid, pp.package_guid, pp.path_type, pp.handler_file, pp.active 
+		$query = "SELECT ppam.*, pp.guid, pp.package_guid, pp.path_type, pp.handler_file, pp.active, pp.pos 
 					FROM `package_plugins_api_map` ppam 
 					INNER JOIN `package_plugins` pp ON ( ppam.`plugin_guid` = pp.`guid` ) 
 					INNER JOIN `packages` p ON p.`guid` = pp.`package_guid`
-					WHERE pp.`active` = ? AND p.`active` = ?";
+					WHERE pp.`active` = ? AND p.`active` = ? ORDER BY pp.`pos` ASC";
 		$bindVars[] = 'y';
 		$bindVars[] = 'y';
 		if( $rslt = $this->mDb->getArray( $query, $bindVars ) ){
@@ -1735,10 +1736,10 @@ class BitSystem extends BitBase {
 	 */
 	function getPackagePluginsConfig( $pForce = FALSE ){
 		if( empty( $this->mPackagePluginsConfig ) || $pForce ){
-			$query = "SELECT pp.`guid` as guid_key, pp.`guid`, pp.`package_guid`, pp.`version`, pp.`active`, pp.`required`, pp.`path_type`, pp.`handler_file`, pp.`name`, pp.`description` 
+			$query = "SELECT pp.`guid` as guid_key, pp.`guid`, pp.`package_guid`, pp.`version`, pp.`active`, pp.`required`, pp.`path_type`, pp.`handler_file`, pp.`name`, pp.`description`, pp.`pos` 
 						FROM `".BIT_DB_PREFIX."package_plugins` pp 
 						INNER JOIN `packages` p ON p.`guid` = pp.`package_guid`
-						WHERE pp.`active` = ? AND p.`active` = ?";
+						WHERE pp.`active` = ? AND p.`active` = ? ORDER BY pp.`pos` ASC";
 			if( $result = $this->mDb->getAssoc( $query, array( 'y', 'y' ) ) ){
 				$this->mPackagePluginsConfig = &$result;
 			}
@@ -3114,7 +3115,7 @@ class BitSystem extends BitBase {
 	function upgradeKernel(){
 		if( is_file( INSTALL_PKG_PATH.'BitInstaller.php' ) && is_readable( INSTALL_PKG_PATH.'BitInstaller.php' ) ){
 			if( $this->getConfig( 'package_kernel' ) ){
-				if( version_compare( $this->getConfig( 'package_kernel_version' ), '2.1.0', "<" ) ) {
+				if( version_compare( $this->getConfig( 'package_kernel_version' ), '2.1.1', "<" ) ) {
 					define( 'AUTO_UPDATE_KERNEL', TRUE );
 					include_once( INSTALL_PKG_PATH.'BitInstaller.php' );
 					global $gBitInstaller;
