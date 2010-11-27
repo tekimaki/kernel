@@ -112,8 +112,8 @@ if( $gBitSystem->isDatabaseValid() ) {
 	}
 
 	// package and package plugin setup
-	$gBitSystem->loadPackagesConfig();
-	$gBitSystem->loadPackagePluginsConfig();
+	$gBitSystem->loadPackagesConfig( TRUE );
+	$gBitSystem->loadPackagePluginsConfig( TRUE );
 
 	// output compression
 	if( ini_get( 'zlib.output_compression' ) == 1 ) {
