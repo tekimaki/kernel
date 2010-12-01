@@ -27,6 +27,7 @@ if( !empty( $_REQUEST["page"] )) {
 			case 'features':
 			case 'packages':
 			case 'packageplugins':
+			case 'sort_packageplugins':
 			case 'installer':
 			case 'general':
 			case 'server':
