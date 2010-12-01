@@ -725,7 +725,7 @@ class BitSystem extends BitBase {
 		}
 // bit_log_error( "PERMISSION DENIED: $pPermission $pMsg" ); 
 		$gBitSmarty->assign( 'msg', tra( $pMsg ) );
-		$this->display( "error.tpl" );
+		$this->display( "error.tpl" , tra("Error"), array( 'display_mode' => 'error' ) );
 		die;
 	}
 
