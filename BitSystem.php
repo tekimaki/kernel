@@ -1498,7 +1498,7 @@ class BitSystem extends BitBase {
 	}
 
 	function getInstalledPackageConfig( $pPackage, $pForce = FALSE ){
-		if( empty( $this->mPackagesInstalled[$pPackageP] ) || $pForce ){
+		if( empty( $this->mPackagesInstalled[$pPackage] ) || $pForce ){
 			$this->getInstalledPackages( $pForce );
 		}
 		return !empty( $this->mPackagesInstalled[$pPackage] )? $this->mPackagesInstalled[$pPackage]:NULL;
