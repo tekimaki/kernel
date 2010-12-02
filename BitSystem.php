@@ -986,7 +986,7 @@ class BitSystem extends BitBase {
 		if( !isset( $this->mHttpStatus ) ) {
 			error_log( "Fatal Error: $pMsg http://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'] );
 		}
-		$this->display( $pTemplate );
+		$this->display( $pTemplate , tra("Error"), array( 'display_mode' => 'error' ) );
 		die;
 	}
 
