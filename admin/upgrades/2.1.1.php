@@ -23,7 +23,7 @@ array( 'DATADICT' => array(
 	)),
 )),
 array( 'QUERY' => array(
-	'UPDATE `package_plugins` SET `pos` = 1',
+	array( 'UPDATE `package_plugins` SET `pos` = 1' ),
 )),
 array( 'DATADICT' => array(
 	// insert new column
