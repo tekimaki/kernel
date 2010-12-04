@@ -2531,15 +2531,17 @@ class BitSystem extends BitBase {
 		foreach( $schemas as $pkgGuid => $pkg ){
 			if( !empty( $pkg['plugins'] ) ){
 				foreach( $pkg['plugins'] as $guid => $plugin ) {
-					// gracefully deal with plugins which have failed to specify a version
-					$plugin['version'] = is_null($plugin['version'])?'0.0.0':$plugin['version'];
+					if( $this->isPackageInstalled( $guid ) ){
+						// gracefully deal with plugins which have failed to specify a version
+						$plugin['version'] = is_null($plugin['version'])?'0.0.0':$plugin['version'];
 
-					if( version_compare( $config[$guid]['version'], $plugin['version'], "<" )) {
-						$ret[$guid] = $config[$guid];
-						$ret[$guid]['info'] = array(
-							'version' => $config[$guid]['version'],
-							'upgrade' => $plugin['version']
-						);
+						if( version_compare( $config[$guid]['version'], $plugin['version'], "<" )) {
+							$ret[$guid] = $config[$guid];
+							$ret[$guid]['info'] = array(
+								'version' => $config[$guid]['version'],
+								'upgrade' => $plugin['version']
+							);
+						}
 					}
 				}
 			}
