@@ -118,7 +118,6 @@ class BitSystem extends BitBase {
 
 	/**
 	 * mPermissionsSchema
-	 * @TODO Deprecate this too - issue is in install pkg where it tries to reconcile permissions issues
 	 */
 	var $mPermissionsSchema = array();
 
@@ -1326,7 +1325,8 @@ class BitSystem extends BitBase {
 			}
 			*/
 			if( !empty( $pkgHash['plugins'] ) ){
-				foreach( $pkgHash['plugins'] as $guid => &$pluginHash ){
+				foreach( $pkgHash['plugins'] as $guid => $pluginHash ){
+					$pluginHash['plugin_guid'] = $pluginHash['guid'];
 					$this->loadPermissionsSchema( $package, $pluginHash );
 				}
 			}
@@ -1338,6 +1338,9 @@ class BitSystem extends BitBase {
 			foreach( $pHash['permissions'] as $perm => &$permHash ){
 				$permHash['package'] = $package;
 				$permHash['name'] = $perm;
+				if( !empty( $pHash['plugin_guid'] ) ){
+					$permHash['plugin_guid'] = $pHash['plugin_guid']; 
+				}
 				$this->mPermissionsSchema[$perm] = $permHash;
 			}
 		}
