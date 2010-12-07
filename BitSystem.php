@@ -60,8 +60,11 @@ class BitSystem extends BitBase {
 	// DEPRECATED @TODO Delete
 	var $mPackages = array();
 
-	// Installed Packages
+	// Active Packages
 	var $mPackagesConfig = array();
+
+	// Installed Packages
+	var $mPackagesInstalled = array();
 
 	// Active (ONLY) Package Plugins
 	var $mPackagePluginsConfig = array();
@@ -115,7 +118,6 @@ class BitSystem extends BitBase {
 
 	/**
 	 * mPermissionsSchema
-	 * @TODO Deprecate this too - issue is in install pkg where it tries to reconcile permissions issues
 	 */
 	var $mPermissionsSchema = array();
 
@@ -624,7 +626,7 @@ class BitSystem extends BitBase {
 	 * @access public
 	 */
 	function isPackageInstalled( $pPackageGuid ){
-		return !is_null( $this->getPackageConfig( $pPackageGuid ) );
+		return !is_null( $this->getInstalledPackageConfig( $pPackageGuid ) );
 	}
 
 	// === isPackageRequired
@@ -722,7 +724,7 @@ class BitSystem extends BitBase {
 		}
 // bit_log_error( "PERMISSION DENIED: $pPermission $pMsg" ); 
 		$gBitSmarty->assign( 'msg', tra( $pMsg ) );
-		$this->display( "error.tpl" );
+		$this->display( "error.tpl" , tra("Error"), array( 'display_mode' => 'error' ) );
 		die;
 	}
 
@@ -983,7 +985,7 @@ class BitSystem extends BitBase {
 		if( !isset( $this->mHttpStatus ) ) {
 			error_log( "Fatal Error: $pMsg http://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'] );
 		}
-		$this->display( $pTemplate );
+		$this->display( $pTemplate , tra("Error"), array( 'display_mode' => 'error' ) );
 		die;
 	}
 
@@ -1323,7 +1325,8 @@ class BitSystem extends BitBase {
 			}
 			*/
 			if( !empty( $pkgHash['plugins'] ) ){
-				foreach( $pkgHash['plugins'] as $guid => &$pluginHash ){
+				foreach( $pkgHash['plugins'] as $guid => $pluginHash ){
+					$pluginHash['plugin_guid'] = $pluginHash['guid'];
 					$this->loadPermissionsSchema( $package, $pluginHash );
 				}
 			}
@@ -1335,6 +1338,9 @@ class BitSystem extends BitBase {
 			foreach( $pHash['permissions'] as $perm => &$permHash ){
 				$permHash['package'] = $package;
 				$permHash['name'] = $perm;
+				if( !empty( $pHash['plugin_guid'] ) ){
+					$permHash['plugin_guid'] = $pHash['plugin_guid']; 
+				}
 				$this->mPermissionsSchema[$perm] = $permHash;
 			}
 		}
@@ -1483,6 +1489,24 @@ class BitSystem extends BitBase {
 		return !empty( $this->mPackagesConfig[$pPackage][$pProperty] )?$this->mPackagesConfig[$pPackage][$pProperty]:NULL;
 	}
 
+	function getInstalledPackages( $pForce = FALSE ){
+		if( empty( $this->mPackagesInstalled ) || $pForce ){
+			$query = "SELECT guid as guid_key, guid, version, homeable, active, required, dir, name, description 
+						FROM `".BIT_DB_PREFIX."packages` p";
+			if( $ret = $this->mDb->getAssoc( $query ) ){
+				$this->mPackagesInstalled = $ret;
+			}
+		}
+		return $this->mPackagesInstalled;
+	}
+
+	function getInstalledPackageConfig( $pPackage, $pForce = FALSE ){
+		if( empty( $this->mPackagesInstalled[$pPackage] ) || $pForce ){
+			$this->getInstalledPackages( $pForce );
+		}
+		return !empty( $this->mPackagesInstalled[$pPackage] )? $this->mPackagesInstalled[$pPackage]:NULL;
+	}
+
 	function getInstalledPluginConfig( $pPackagePlugin, $pForce = FALSE ){
 		if( empty( $this->mPackagePluginsInstalled[$pPackagePlugin] ) || $pForce ){
 			$this->getInstalledPackagePlugins( $pForce );
@@ -1551,7 +1575,7 @@ class BitSystem extends BitBase {
 
 	function activatePackage( $pPackageGuid ){
 		if( $this->isPackageInstalled( $pPackageGuid ) ){
-			$storeHash = $this->getPackageConfig( $pPackageGuid );
+			$storeHash = $this->getInstalledPackageConfig( $pPackageGuid );
 			$storeHash['active'] = 'y';
 			$this->storePackage( $storeHash );
 		}
@@ -1560,7 +1584,7 @@ class BitSystem extends BitBase {
 
 	function deactivatePackage( $pPackageGuid ){
 		if( $this->isPackageInstalled( $pPackageGuid ) ){
-			$storeHash = $this->getPackageConfig( $pPackageGuid );
+			$storeHash = $this->getInstalledPackageConfig( $pPackageGuid );
 			$storeHash['active'] = 'n';
 			$this->storePackage( $storeHash );
 		}
@@ -1619,6 +1643,7 @@ class BitSystem extends BitBase {
 			$pParamHash['plugin_store']['description'] = !empty( $pParamHash['description'] )?$pParamHash['description']:NULL;
 			$pParamHash['plugin_store']['path_type'] = !empty( $path_type )?$path_type:'package'; 		// if no path_type set we assume it came with the package
 			$pParamHash['plugin_store']['handler_file'] = $pParamHash['handler_file'];
+			$pParamHash['plugin_store']['pos'] = !empty( $pParamHash['pos'] )?$pParamHash['pos']:'1';
 		}
 
 		return( count( $this->mErrors )== 0 );
@@ -1689,11 +1714,11 @@ class BitSystem extends BitBase {
 	// @TODO maybe all should load on first call
 	function loadPackagePluginHandlers() {
 		$ret = $bindVars = array();
-		$query = "SELECT ppam.*, pp.guid, pp.package_guid, pp.path_type, pp.handler_file, pp.active 
+		$query = "SELECT ppam.*, pp.guid, pp.package_guid, pp.path_type, pp.handler_file, pp.active, pp.pos 
 					FROM `package_plugins_api_map` ppam 
 					INNER JOIN `package_plugins` pp ON ( ppam.`plugin_guid` = pp.`guid` ) 
 					INNER JOIN `packages` p ON p.`guid` = pp.`package_guid`
-					WHERE pp.`active` = ? AND p.`active` = ?";
+					WHERE pp.`active` = ? AND p.`active` = ? ORDER BY pp.`pos` ASC";
 		$bindVars[] = 'y';
 		$bindVars[] = 'y';
 		if( $rslt = $this->mDb->getArray( $query, $bindVars ) ){
@@ -1714,10 +1739,10 @@ class BitSystem extends BitBase {
 	 */
 	function getPackagePluginsConfig( $pForce = FALSE ){
 		if( empty( $this->mPackagePluginsConfig ) || $pForce ){
-			$query = "SELECT pp.`guid` as guid_key, pp.`guid`, pp.`package_guid`, pp.`version`, pp.`active`, pp.`required`, pp.`path_type`, pp.`handler_file`, pp.`name`, pp.`description` 
+			$query = "SELECT pp.`guid` as guid_key, pp.`guid`, pp.`package_guid`, pp.`version`, pp.`active`, pp.`required`, pp.`path_type`, pp.`handler_file`, pp.`name`, pp.`description`, pp.`pos` 
 						FROM `".BIT_DB_PREFIX."package_plugins` pp 
 						INNER JOIN `packages` p ON p.`guid` = pp.`package_guid`
-						WHERE pp.`active` = ? AND p.`active` = ?";
+						WHERE pp.`active` = ? AND p.`active` = ? ORDER BY pp.`pos` ASC";
 			if( $result = $this->mDb->getAssoc( $query, array( 'y', 'y' ) ) ){
 				$this->mPackagePluginsConfig = &$result;
 			}
@@ -2393,16 +2418,11 @@ class BitSystem extends BitBase {
 	function storeVersion( $pPackage = NULL, $pVersion ) {
 		global $gBitSystem;
 		$ret = FALSE;
-		if( !empty( $pVersion ) && $this->validateVersion( $pVersion )) {
-			if( empty( $pPackage )) {
-				$gBitSystem->storeConfig( "bitweaver_version", $pVersion, 'kernel' );
-				$ret = TRUE;
-			} elseif( !empty( $gBitSystem->mPackages[$pPackage] )) {
-				$config = $this->getPackageConfig( $pPackage );
-				$config['version'] = $pVersion; 
-				$this->storePackage( $config );
-				$ret = TRUE;
-			}
+		if( !empty( $pVersion ) && $this->validateVersion( $pVersion ) && $this->isPackageInstalled( $pPackage )) {
+			$config = $this->getInstalledPackageConfig( $pPackage );
+			$config['version'] = $pVersion; 
+			$this->storePackage( $config );
+			$ret = TRUE;
 		}
 		return $ret;
 	}
@@ -2474,7 +2494,7 @@ class BitSystem extends BitBase {
 	
 	function getUpgradablePackages(){
 		$ret = array();
-		$config = $this->getPackagesConfig();
+		$config = $this->getInstalledPackages();
 		$schemas = $this->getPackagesSchemas();
 		foreach( $config as $guid => $pkg ) {
 			if( version_compare( $pkg['version'], $schemas[$guid]['version'], "<" )) {
@@ -2506,12 +2526,12 @@ class BitSystem extends BitBase {
 	
 	function getUpgradablePlugins(){
 		$ret = array();
-		$config = $this->getPackagePluginsConfig();
+		$config = $this->getInstalledPackagePlugins();
 		$schemas = $this->getPackagesSchemas();
 		foreach( $schemas as $pkgGuid => $pkg ){
 			if( !empty( $pkg['plugins'] ) ){
 				foreach( $pkg['plugins'] as $guid => $plugin ) {
-					if( $this->isPluginInstalled( $guid ) ){ 
+					if( $this->isPackageInstalled( $guid ) ){
 						// gracefully deal with plugins which have failed to specify a version
 						$plugin['version'] = is_null($plugin['version'])?'0.0.0':$plugin['version'];
 
@@ -3094,33 +3114,36 @@ class BitSystem extends BitBase {
 	 */
 	function upgradeKernel(){
 		if( is_file( INSTALL_PKG_PATH.'BitInstaller.php' ) && is_readable( INSTALL_PKG_PATH.'BitInstaller.php' ) ){
-			if( $this->getConfig( 'package_kernel' ) ){
-				if( version_compare( $this->getConfig( 'package_kernel_version' ), '2.1.0', "<" ) ) {
-					define( 'AUTO_UPDATE_KERNEL', TRUE );
-					include_once( INSTALL_PKG_PATH.'BitInstaller.php' );
-					global $gBitInstaller;
-					$gBitInstaller = new BitInstaller();
+			define( 'AUTO_UPDATE_KERNEL', TRUE );
+			include_once( INSTALL_PKG_PATH.'BitInstaller.php' );
+			global $gBitInstaller;
+			$gBitInstaller = new BitInstaller();
 
-					$dir = KERNEL_PKG_PATH.'admin/upgrades/';
-					$upDir = opendir( $dir );
-					while( FALSE !== ( $file = readdir( $upDir ))) {
-						if( is_file( $dir.$file )) {
-							$upVersion = str_replace( ".php", "", $file );
-							// we only want to load files of versions that are greater than is installed
-							if( $gBitInstaller->validateVersion( $upVersion ) && version_compare( $gBitInstaller->getVersion( 'kernel' ), $upVersion, '<' )) {
-								include_once( $dir.$file );
-							}
-						}
+			$dir = KERNEL_PKG_PATH.'admin/upgrades/';
+			$upDir = opendir( $dir );
+			while( FALSE !== ( $file = readdir( $upDir ))) {
+				if( is_file( $dir.$file )) {
+					$upVersion = str_replace( ".php", "", $file );
+					// we only want to load files of versions that are greater than is installed
+					// special switch for pre 2.1.0 system
+					if( $this->getConfig( 'package_kernel_version' ) ){
+						$currVersion = $gBitInstaller->getVersion( 'kernel' );
 					}
-
-					if( $errors = $gBitInstaller->upgradePackageVersions('kernel') ){
-						// upgrade successful - continue
-						error_log( 'Auto Kernel Upgrade: '.implode( $errors ) );
-					}else{
-						// yay!
-						return;
+					else{
+						$currVersion = $this->getPackageConfigValue( 'kernel', 'version' ); 
+					}
+					if( $gBitInstaller->validateVersion( $upVersion ) && version_compare( $currVersion, $upVersion, '<' )) {
+						include_once( $dir.$file );
 					}
 				}
+			}
+
+			if( $errors = $gBitInstaller->upgradePackageVersions('kernel') ){
+				// upgrade successful - continue
+				error_log( 'Auto Kernel Upgrade: '.implode( $errors ) );
+			}else{
+				// yay!
+				return;
 			}
 		}
 

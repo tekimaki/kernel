@@ -65,7 +65,7 @@
 
 				{$install_unavailable}
 
-				{foreach key=guid item=package from=$gBitSystem->mPackagesConfig}
+				{foreach key=guid item=package from=$installed}
 					{if !$gBitSystem->mPackagesSchemas.$guid.required}
 						<div class="row">
 							<div class="formlabel">
@@ -95,50 +95,6 @@
 									{/foreach}
 								</label>
 								{include file="bitpackage:kernel/package_help_inc.tpl" package=$gBitSystem->mPackagesSchemas.$guid}
-							{/forminput}
-						</div>
-					{/if}
-				{/foreach}
-			{/legend}
-
-
-			{legend legend="Services installed on your system"}
-				<p>
-					{tr}A service package is a package that allows you to extend the way you display bitweaver content - such as <em>categorising your content</em>. Activating more than one of any service type might lead to conflicts.<br />
-					We therefore recommend that you <em>	enable only one of each</em> <strong>service type</strong>.{/tr}
-				</p>
-				{foreach key=name item=package from=$gBitSystem->mPackagesConfig}
-					{if $package.installed && $package.service && !$package.required}
-						<div class="row">
-							<div class="formlabel">
-								{if !$package.required}<label for="package_{$name}">{/if}{biticon ipackage=$name iname="pkg_`$name`" iexplain="$name" iforce=icon}{if !$package.required}</label>{/if}
-							</div>
-							{forminput}
-								<label>
-									{assign var=is_requirement value=''}
-									{foreach from=$gBitSystem->mRequirements key=req item=reqs}
-										{if $reqs.$name && $gBitSystem->isPackageActive($req) && $package.active_switch eq 'y'}
-											{assign var=is_requirement value='true'}
-										{/if}
-									{/foreach}
-									{if $is_requirement}
-										{biticon iname=dialog-ok iexplain="Required"}
-										<input type="hidden" value="y" name="fPackage[{$name}]" id="package_{$name}" />
-									{else}
-										<input type="checkbox" value="y" name="fPackage[{$name}]" id="package_{$name}" {if $package.active_switch eq 'y' }checked="checked"{/if} />
-									{/if}
-									&nbsp; <strong>{$name|capitalize}</strong>
-									{assign var=first_loop value=1}
-									{foreach from=$gBitSystem->mRequirements key=required_by item=reqs}
-										{if $reqs.$name}
-											{if $first_loop}<br />{biticon iname=dialog-warning iexplain="Requirement"} Required by {else}, {/if}{$required_by}
-											{assign var=first_loop value=0}
-										{/if}
-									{/foreach}
-									<br />
-									{tr}Service Type{/tr}: <strong>{$package.service|capitalize|replace:"_":" "}</strong>
-								</label>
-								{include file="bitpackage:kernel/package_help_inc.tpl" package=$gBitSystem->mPackagesSchemas.$name}
 							{/forminput}
 						</div>
 					{/if}

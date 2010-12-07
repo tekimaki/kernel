@@ -67,7 +67,8 @@ kernel:
       path_type C(64) NOTNULL,
       handler_file C(64) NOTNULL,
       name C(64),
-      description C(250)
+      description C(250),
+      pos I4 NOTNULL DEFAULT '1'
       CONSTRAINT '
       , CONSTRAINT `package_guid_ref` FOREIGN KEY (`package_guid`) REFERENCES `packages`( `guid` )'
 
