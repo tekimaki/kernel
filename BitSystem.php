@@ -1326,7 +1326,7 @@ class BitSystem extends BitBase {
 			*/
 			if( !empty( $pkgHash['plugins'] ) ){
 				foreach( $pkgHash['plugins'] as $guid => $pluginHash ){
-					$pluginHash['plugin_guid'] = $pluginHash['guid'];
+					$pluginHash['plugin_guid'] = $guid;
 					$this->loadPermissionsSchema( $package, $pluginHash );
 				}
 			}
