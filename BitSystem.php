@@ -735,7 +735,7 @@ class BitSystem extends BitBase {
 	 * @return none
 	 * @access public
 	 */
-	function confirmDialog( $pFormHash, $pMsg ) {
+	function confirmDialog( $pFormHash, $pMsg, $pDisplayMode = 'edit' ) {
 		global $gBitSmarty;
 		if( !empty( $pMsg ) ) {
 			// automatically preserve pagination
@@ -761,7 +761,7 @@ class BitSystem extends BitBase {
 			// render and exit
 			$gBitSmarty->assign( 'msgFields', $pMsg );
 			$gBitSmarty->assign_by_ref( 'hiddenFields', $pFormHash );
-			$this->display( 'bitpackage:kernel/confirm.tpl', NULL, array( 'display_mode' => 'edit' ));
+			$this->display( 'bitpackage:kernel/confirm.tpl', NULL, array( 'display_mode' => $pDisplayMode ));
 			die;
 		}
 	}
