@@ -899,6 +899,7 @@ class BitSystem extends BitBase {
 					|| isset( $_SERVER['ACTIVE_PACKAGE'] ) 
 					|| preg_match( '!/'.$this->mPackagesConfig[$pkgNameKey]['dir'].'/!', $_SERVER['PHP_SELF'] ) 
 					|| preg_match( '!/'.$pkgNameKey.'/!', $_SERVER['PHP_SELF'] )
+					|| $pkgNameKey == $this->getConfig( 'bit_index' )
 					)
 				) {
 				if( isset( $_SERVER['ACTIVE_PACKAGE'] )) {
