@@ -884,30 +884,43 @@ class BitSystem extends BitBase {
 			$this->mPackagesConfig[$pkgNameKey]['path']  = BIT_ROOT_PATH . basename( $path ) . '/';
 			$this->mPackagesConfig[$pkgNameKey]['dir'] = $package_dir_name;
 			$this->mPackagesDirNameXref[$package_dir_name] = $pkgNameKey;
+		}	
+	}
+
+	function defineActivePackage(){
+		if( !empty( $this->mPackagesConfig ) && !defined( 'ACTIVE_PACKAGE' ) ){ 
+			$activePackage = NULL;
 
 			// Work around for old versions of IIS that do not support $_SERVER['SCRIPT_FILENAME'] - wolff_borg
 			if( !array_key_exists( 'SCRIPT_FILENAME', $_SERVER )) {
 				//remove double-backslashes and return
 				$_SERVER['SCRIPT_FILENAME'] =  str_replace('\\\\', '\\', $_SERVER['PATH_TRANSLATED'] );
 			}
-
 			// Define the package we are currently in
 			// I tried strpos instead of preg_match here, but it didn't like strings that begin with slash?! - spiderr
 			$scriptDir = ( basename( dirname( $_SERVER['SCRIPT_FILENAME'] ) ) );
-			if( !defined( 'ACTIVE_PACKAGE' ) 
-				&& ( $scriptDir == constant( $pkgName.'_PKG_DIR' ) 
-					|| isset( $_SERVER['ACTIVE_PACKAGE'] ) 
-					|| preg_match( '!/'.$this->mPackagesConfig[$pkgNameKey]['dir'].'/!', $_SERVER['PHP_SELF'] ) 
-					|| preg_match( '!/'.$pkgNameKey.'/!', $_SERVER['PHP_SELF'] )
-					|| $pkgNameKey == $this->getConfig( 'bit_index' )
-					)
-				) {
-				if( isset( $_SERVER['ACTIVE_PACKAGE'] )) {
-					// perhaps the webserver told us the active package (probably because of mod_rewrites)
-					$pkgNameKey = $_SERVER['ACTIVE_PACKAGE'];
+
+			if( isset( $_SERVER['ACTIVE_PACKAGE'] )) {
+				// perhaps the webserver told us the active package (probably because of mod_rewrites)
+				$activePackage = $_SERVER['ACTIVE_PACKAGE'];
+			}else{
+				foreach( $this->mPackagesConfig as $pkgGuid => $pkgHash ){
+					if( $scriptDir == $pkgHash['dir']  
+						|| isset( $_SERVER['ACTIVE_PACKAGE'] ) 
+						|| preg_match( '!/'.$pkgHash['dir'].'/!', $_SERVER['PHP_SELF'] ) 
+						|| preg_match( '!/'.$pkgGuid.'/!', $_SERVER['PHP_SELF'] )
+					){
+						$activePackage = $pkgGuid;
+						break;
+					}
 				}
-				define( 'ACTIVE_PACKAGE', $pkgNameKey );
-				$this->mActivePackage = $pkgNameKey;
+			}
+			if( $activePackage ){
+				define( 'ACTIVE_PACKAGE', $activePackage );
+				$this->mActivePackage = $activePackage;
+			}elseif( !defined( 'ACTIVE_PACKAGE' ) && $defaultPkg = $this->getConfig('bit_index' ) ){
+				define( 'ACTIVE_PACKAGE', $defaultPkg );
+				$this->mActivePackage = $defaultPkg;
 			}
 		}
 	}
@@ -1443,6 +1456,7 @@ class BitSystem extends BitBase {
 		if( empty( $this->mPackages ) ){
 			$this->mPackages = &$this->mPackagesConfig;
 		}
+		$this->defineActivePackage();
 	}
 
 	function getPackagesConfig( $pForce = FALSE ){
