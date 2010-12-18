@@ -1545,6 +1545,7 @@ class BitSystem extends BitBase {
 					$result = $this->mDb->associateInsert( $table, $pParamHash['package_store'] );
 				}else{
 					$locId = array( "guid" => $pParamHash['guid'] );
+					vd( $pParamHash['package_store'] );
 					$result = $this->mDb->associateUpdate( $table, $pParamHash['package_store'], $locId );
 				}
 				$this->getPackageConfig( $pParamHash['guid'], TRUE );
@@ -2437,9 +2438,8 @@ class BitSystem extends BitBase {
 			$config = $this->getInstalledPackageConfig( $pPackage );
 			$config['version'] = $pVersion; 
 			$this->storePackage( $config );
-			$ret = TRUE;
 		}
-		return $ret;
+		return( count( $this->mErrors ) == 0 );
 	}
 	
 	/**
