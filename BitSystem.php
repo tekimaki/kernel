@@ -484,7 +484,11 @@ class BitSystem extends BitBase {
 		//		$gBitSmarty->assign( 'page', !empty( $_REQUEST['page'] ) ? $_REQUEST['page'] : NULL );
 		// Make sure that the gBitSystem symbol available to templates is correct and up-to-date.
 		$gBitSmarty->assign_by_ref('gBitSystem', $this);
-		$gBitSmarty->display( 'bitpackage:kernel/bitweaver.tpl' );
+		if( !empty( $pOptionsHash['return'] ) && $pOptionsHash['return'] == 'fetch' ){
+			return $gBitSmarty->fetch( 'bitpackage:kernel/bitweaver.tpl' );
+		}else{
+			$gBitSmarty->display( 'bitpackage:kernel/bitweaver.tpl' );
+		}
 		$this->postDisplay( $pMid );
 	}
 
