@@ -4,11 +4,11 @@
 	{if $gBitSystem->isFeatureActive( 'bidirectional_text' )}<div dir="rtl">{/if}
 
 	<div id="outerwrapper" class="blocks{
-		if $gBitSystem->isFeatureActive( 'site_left_column' ) && $l_modules && !$gHideModules and $gBitSystem->isFeatureActive( 'site_right_column' ) && $r_modules && !$gHideModules
+		if $gBitSystem->isFeatureActive( 'site_left_column' ) && $l_column && !$gHideModules and $gBitSystem->isFeatureActive( 'site_right_column' ) && $r_column && !$gHideModules
 			}3{
-		elseif $gBitSystem->isFeatureActive( 'site_left_column' ) && $l_modules && !$gHideModules
+		elseif $gBitSystem->isFeatureActive( 'site_left_column' ) && $l_column && !$gHideModules
 			}2n{
-		elseif $gBitSystem->isFeatureActive( 'site_right_column' ) && $r_modules && !$gHideModules
+		elseif $gBitSystem->isFeatureActive( 'site_right_column' ) && $r_column && !$gHideModules
 			}2e{
 		else
 			}1{
@@ -42,15 +42,15 @@
     			</div><!-- end #content -->{* needed by output filters. *}
     		</div><!-- end #wrapper -->
     
-    		{if $gBitSystem->isFeatureActive( 'site_left_column' ) && $l_modules && !$gHideModules}
+    		{if $gBitSystem->isFeatureActive( 'site_left_column' ) && $l_column && !$gHideModules}
     			<div id="navigation">
-    				{include file="bitpackage:kernel/bit_left.tpl"}
+					{$l_column} {*column content is pre-rendered in themes/modules_inc.php *}
     			</div><!-- end #navigation -->{* needed by output filters. *}
     		{/if}
     
-    		{if $gBitSystem->isFeatureActive( 'site_right_column' ) && $r_modules && !$gHideModules}
+    		{if $gBitSystem->isFeatureActive( 'site_right_column' ) && $r_column && !$gHideModules}
     			<div id="extra">
-    				{include file="bitpackage:kernel/bit_right.tpl"}
+					{$r_column} {*column content is pre-rendered in themes/modules_inc.php *}
     			</div><!-- end #extra -->{* needed by output filters. *}
     		{/if}
         </div>
