@@ -24,6 +24,7 @@ if( $processForm ) {
 	$pref_simple_values = array(
 		"kernel_server_name",
 		"site_sender_email",
+		"bitmailer_sysadmin_email",
 		"site_proxy_host",
 		"site_proxy_port",
 		"site_session_lifetime",

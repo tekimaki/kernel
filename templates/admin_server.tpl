@@ -83,6 +83,14 @@
 					{/forminput}
 				</div>
 
+				<div class="row">
+					{formlabel label="Site system administrator email address" for="bitmailer_sysadmin_email"}
+					{forminput}
+						<input size="50" type="text" name="bitmailer_sysadmin_email" id="bitmailer_sysadmin_email" value="{$gBitSystem->getConfig('bitmailer_sysadmin_email')|escape}" />
+						{formhelp note="An email address system errors and other critical notifications will be sent to."}
+					{/forminput}
+				</div>
+
 {* defaults to STORAGE_PKG_NAME now
 				<div class="row">
 					{formlabel label="Centralized user upload directory" for="site_upload_dir"}

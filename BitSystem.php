@@ -362,15 +362,17 @@ class BitSystem extends BitBase {
 	 * @access public
 	 */
 	function getErrorEmail() {
+		$ret = NULL;
 		if( defined('ERROR_EMAIL') ) {
 			$ret = ERROR_EMAIL;
-		} elseif( $this->getConfig( 'site_sender_email' ) ) {
-			$ret = $this->getConfig( 'site_sender_email' );
+		} elseif( $this->getConfig( 'bitmailer_sysadmin_email' ) ) {
+			$ret = $this->getConfig( 'bitmailer_sysadmin_email' );
 		} elseif( !empty( $_SERVER['SERVER_ADMIN'] ) ) {
 			$ret = $_SERVER['SERVER_ADMIN'];
 		} else {
 			$ret = 'root@localhost';
 		}
+		return $ret;
 	}
 
 	// === sendEmail

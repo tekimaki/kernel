@@ -34,7 +34,7 @@ function bit_display_error( $pLogMessage, $pSubject, $pFatal = TRUE ) {
 	global $gBitSystem;
 
 	// You can prevent sending of error emails by adding define('ERROR_EMAIL', ''); in your config/config_inc.php
-	$errorEmail = defined( 'ERROR_EMAIL' ) ? ERROR_EMAIL : (!empty( $_SERVER['SERVER_ADMIN'] ) ? $_SERVER['SERVER_ADMIN'] : NULL);
+	$errorEmail = $gBitSystem->getErrorEmail();
 
 	error_log( $pLogMessage );
 
@@ -59,10 +59,31 @@ function bit_display_error( $pLogMessage, $pSubject, $pFatal = TRUE ) {
 		print "<hr />";
 		print "</body></html>";
 	} elseif( $errorEmail ) {
-		mail( $errorEmail,  "$pSubject", $pLogMessage );
+		global $gBitSmarty, $gSwitchboardSystem;
+
+		// send error email
+		// use switchboard to send mail if available
+		$siteName = $gBitSystem->getConfig('site_title', $_SERVER['HTTP_HOST'] );
+		$subject = $siteName.' - '.$pSubject;
+		if( is_object( $gSwitchboardSystem ) ){
+			$recipients = array( array( 'email' => $errorEmail ), );
+			$msg['recipients'] = $recipients;
+			$msg['subject'] = $subject;
+			$msg['alt_message'] = $pLogMessage;
+			$gSwitchboardSystem->sendEmail( $msg );
+		// fall back to php mail
+		}else{
+			mail( $errorEmail,  "$subject", $pLogMessage );
+		}
+
+		// send email to bitweaver development team - opt in by setting AUTO_BUG_SUBMIT
 		if( defined( 'AUTO_BUG_SUBMIT' ) && AUTO_BUG_SUBMIT && !empty( $gBitSystem ) && $gBitSystem->isDatabaseValid() ) {
 			mail( 'bugs@bitweaver.org',"$pSubject",$pLogMessage );
 		}
+
+		// hide the error from page display
+		$gBitSmarty->assign( 'showmsg', 'n' );
+
 	}
 
 	if( $pFatal ) {
