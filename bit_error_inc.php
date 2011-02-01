@@ -31,7 +31,7 @@ function bit_log_error( $pLogMessage ) {
 }
 
 function bit_display_error( $pLogMessage, $pSubject, $pFatal = TRUE ) {
-	global $gBitSystem;
+	global $gBitSystem, $gBitThemes;
 
 	// You can prevent sending of error emails by adding define('ERROR_EMAIL', ''); in your config/config_inc.php
 	$errorEmail = $gBitSystem->getErrorEmail();
@@ -81,9 +81,12 @@ function bit_display_error( $pLogMessage, $pSubject, $pFatal = TRUE ) {
 			mail( 'bugs@bitweaver.org',"$pSubject",$pLogMessage );
 		}
 
-		// hide the error from page display
-		$gBitSmarty->assign( 'showmsg', 'n' );
+		$gBitSmarty->assign( 'showmsg', 'n' ); // showmsg shows up in users/templates/register.tpl not clear why its set here
 
+		if( $pFatal ){
+			$gBitThemes->loadLayout( array( 'layout' => 'kernel' ), TRUE );
+			$gBitSystem->display( 'bitpackage:kernel/db_error.tpl', tra('System Error' ), array( 'display_mode' => 'admin' ) );
+		}
 	}
 
 	if( $pFatal ) {
