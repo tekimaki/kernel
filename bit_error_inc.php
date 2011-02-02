@@ -83,9 +83,11 @@ function bit_display_error( $pLogMessage, $pSubject, $pFatal = TRUE ) {
 
 		$gBitSmarty->assign( 'showmsg', 'n' ); // showmsg shows up in users/templates/register.tpl not clear why its set here
 
+		$gBitSmarty->assign('dbError', ERROR);
+
 		if( $pFatal ){
 			$gBitThemes->loadLayout( array( 'layout' => 'kernel' ), TRUE );
-			$gBitSystem->display( 'bitpackage:kernel/db_error.tpl', tra('System Error' ), array( 'display_mode' => 'admin' ) );
+			$gBitSystem->display( 'bitpackage:kernel/db_error.tpl', tra('System Error' ), array( 'display_mode' => 'error' ) );
 		}
 	}
 
