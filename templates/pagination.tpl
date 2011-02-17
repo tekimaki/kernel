@@ -152,7 +152,7 @@
 					{if $currpage > 1}
 						<div class="page_num"><a href="{$pageUrl}&amp;list_page={$prevpage}">{$previous}</a></div>
 					{else}
-						<div class="disabled page">{$previous}</div>	
+						<div class="disabled">{$previous}</div>	
 					{/if}
 					{assign var="counts" value=0}
 					{*pages*}
@@ -228,10 +228,10 @@
 						{/if}
 					{/if}
 					{*next button*}
-					{if $page < $lastpage} 
+					{if $currpage < $lastpage} 
 						<div class="page_num" ><a href="{$pageUrl}&amp;list_page={$nextpage}">{$next}</a></div>
 					{else}
-						<div class="disabled page">{$next}</div>	
+						<div class="disabled">{$next}</div>	
 					{/if}
 				{/if}
 			</div>
