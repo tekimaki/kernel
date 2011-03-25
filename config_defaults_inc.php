@@ -83,12 +83,12 @@ if( !empty( $gShellScript ) ) {
 	$_SERVER['SCRIPT_URL'] = '';
 	$_SERVER['HTTP_HOST'] = 'localhost';
 	$_SERVER['HTTP_USER_AGENT'] = 'cron';
-	$_SERVER['SERVER_NAME'] = '';
 	$_SERVER['HTTP_SERVER_VARS'] = '';
 	$_SERVER['REMOTE_ADDR'] = 'localhost';
 	if( empty( $_SERVER['SERVER_ADMIN'] ) ) {
 		$_SERVER['SERVER_ADMIN'] = 'root@localhost';
 	}
+	// $_SERVER['SERVER_NAME'] = ''; overwriting this screws with postfix's ability to send mail, don't do this
 
 	// Process some global arguments
 	global $gArgs, $argv;
