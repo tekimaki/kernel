@@ -390,6 +390,10 @@ class BitBase {
 
 	function setSuccess( $pSuccessKey, $pValue ){
 		$this->mSuccess[$pSuccessKey] = $pValue;
+	} 
+
+	function resetErrors(){
+		$this->mErrors = array();
 	}
 
 }
