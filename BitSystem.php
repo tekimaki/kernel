@@ -186,9 +186,10 @@ class BitSystem extends BitBase {
 	/**
 	 * Load all preferences and store them in $this->mConfig
 	 *
-	 * @param $pPackage optionally get preferences only for selected package
+	 * @param $pPackage string optional load preferences only for selected package
+	 * $param $pForce boolean force reload of config settings 
 	 */
-	function loadConfig( $pPackage = NULL ) {
+	public function loadConfig( $pPackage = NULL, $pForce = FALSE ) {
 		$queryVars = array();
 		$whereClause = '';
 
@@ -197,7 +198,7 @@ class BitSystem extends BitBase {
 			$whereClause = ' WHERE `package`=? ';
 		}
 
-		if ( empty( $this->mConfig ) ) {
+		if ( empty( $this->mConfig ) || $pForce ) {
 			$this->mConfig = array();
 			$query = "SELECT `config_name` ,`config_value`, `package` FROM `" . BIT_DB_PREFIX . "kernel_config` " . $whereClause;
 			if( $rs = $this->mDb->query( $query, $queryVars, -1, -1 ) ) {
@@ -216,7 +217,7 @@ class BitSystem extends BitBase {
 	 *
 	 * @access public
 	 **/
-	function getConfig( $pName, $pDefault = NULL ) {
+	public function getConfig( $pName, $pDefault = NULL ) {
 		if( empty( $this->mConfig ) ) {
 			$this->loadConfig();
 		}
@@ -1161,9 +1162,8 @@ class BitSystem extends BitBase {
 		if( $pkgs = $this->mPackagesConfig ) {
 			// gPreScan holds a list of packages that MUST be loaded first
 			foreach( $gPreScan as $pkgGuid ) {
-				if( $this->isPackageActive( $pkgGuid ) ){
+				if( !empty( $this->mPackagesConfig[$pkgGuid] ) ) 
 					$loadPkgs[] = $this->getPackageConfig( $pkgGuid );
-				}
 			}
 
 			foreach( $pkgs as $pkg ){
@@ -1482,7 +1482,21 @@ class BitSystem extends BitBase {
 		return $this->mPackagesConfig;
 	}
 
-	function getPackageConfig( $pPackage, $pForce = FALSE ){
+	function getPackageConfig( $pPackage, $pForce = FALSE )
+	{
+		$ret = NULL;
+		if( $pForce )
+		{
+			$ret = $this->loadPackageConfig( $pPackage, $pForce );
+		}elseif( !empty( $this->mPackagesConfig[$pPackage] ) )
+		{
+			$ret = $this->mPackagesConfig[$pPackage]; 
+		}
+		return $ret;
+	}
+
+	function loadPackageConfig( $pPackage, $pForce = FALSE )
+	{
 		if( empty( $this->mPackagesConfig[$pPackage] ) || $pForce ){
 			$query = "SELECT p.* 
 						FROM `".BIT_DB_PREFIX."packages` p 
@@ -1508,9 +1522,9 @@ class BitSystem extends BitBase {
 		return !empty( $this->mPackagePluginsConfig[$pPackagePlugin] )? $this->mPackagePluginsConfig[$pPackagePlugin]:NULL;
 	}
 
-	function getPackageConfigValue( $pPackage, $pProperty ){
+	function getPackageConfigValue( $pPackage, $pProperty, $pForce = FALSE ){
 		if( empty( $this->mPackagesConfig[$pPackage] ) ){
-			$this->getPackageConfig( $pPackage, TRUE );
+			$this->getPackageConfig( $pPackage, $pForce );
 		}
 		return !empty( $this->mPackagesConfig[$pPackage][$pProperty] )?$this->mPackagesConfig[$pPackage][$pProperty]:NULL;
 	}

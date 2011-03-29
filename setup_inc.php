@@ -107,7 +107,7 @@ if( $gBitSystem->isDatabaseValid() ) {
 
 	// run kernel upgrades before anything else 
 	$kernel_upgrade_version = '2.1.1';
-	if( !defined('BIT_INSTALL') && ($gBitSystem->getConfig('package_kernel_version') ||  version_compare( $gBitSystem->getPackageConfigValue( 'kernel', 'version' ), $kernel_upgrade_version, "<" ) )) {
+	if( !defined('BIT_INSTALL') && ($gBitSystem->getConfig('package_kernel_version') ||  version_compare( $gBitSystem->getPackageConfigValue( 'kernel', 'version', TRUE ), $kernel_upgrade_version, "<" ) )) {
 		$gBitSystem->upgradeKernel();
 	}
 
