@@ -34,7 +34,9 @@ function bit_display_error( $pLogMessage, $pSubject, $pFatal = TRUE ) {
 	global $gBitSystem, $gBitThemes;
 
 	// You can prevent sending of error emails by adding define('ERROR_EMAIL', ''); in your config/config_inc.php
-	$errorEmail = $gBitSystem->getErrorEmail();
+	if( is_object( $gBitSystem ) ){
+		$errorEmail = $gBitSystem->getErrorEmail();
+	}
 
 	error_log( $pLogMessage );
 
@@ -45,7 +47,6 @@ function bit_display_error( $pLogMessage, $pSubject, $pFatal = TRUE ) {
 				<title>bitweaver - White Screen of Death</title>
 			</head>
 			<body style="background:#fff; font-family:monospace;">';
-// 		print "<h1>Upgrade Beta 1 to Beta 2</h1>If you are getting this error because you just upgraded your bitweaver from Beta 1 to Beta 2, please follow this link to the installer, which will guide you through the upgrade process: <a href='".BIT_ROOT_URL."install/install.php?step=4'>Upgrade Beta 1 to Beta 2</a>";
 		print "<h1 style=\"color:#900; font-weight:bold;\">You are running bitweaver in TEST mode</h1>\n";
 		print "
 			<ul>
