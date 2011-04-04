@@ -2536,13 +2536,19 @@ class BitSystem extends BitBase {
 		$config = $this->getInstalledPackages();
 		$schemas = $this->getPackagesSchemas();
 		foreach( $config as $guid => $pkg ) {
-			if( version_compare( $pkg['version'], $schemas[$guid]['version'], "<" )) {
-				$ret[$guid] = $pkg;
-				$ret[$guid]['info'] = array(
-					'version' => $pkg['version'],
-					'upgrade' => $schemas[$guid]['version']
-				);
+			if( !empty( $schemas[$guid] ) ){
+				if( version_compare( $pkg['version'], $schemas[$guid]['version'], "<" )) {
+					$ret[$guid] = $pkg;
+					$ret[$guid]['info'] = array(
+						'version' => $pkg['version'],
+						'upgrade' => $schemas[$guid]['version']
+					);
+				}
 			}
+			// @TODO
+			// its possible there is a package in the table 
+			// but the pkg code as been removed a schema can not be found
+			// do something about cleaning this up?
 		}
 		return $ret;
 	}
@@ -2572,7 +2578,7 @@ class BitSystem extends BitBase {
 				foreach( $pkg['plugins'] as $guid => $plugin ) {
 					if( $this->isPackageInstalled( $guid ) ){
 						// gracefully deal with plugins which have failed to specify a version
-						$plugin['version'] = is_null($plugin['version'])?'0.0.0':$plugin['version'];
+						$plugin['version'] = empty( $plugin['version'] ) || is_null($plugin['version'])?'0.0.0':$plugin['version'];
 
 						if( version_compare( $config[$guid]['version'], $plugin['version'], "<" )) {
 							$ret[$guid] = $config[$guid];
