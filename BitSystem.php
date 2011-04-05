@@ -1894,7 +1894,7 @@ class BitSystem extends BitBase {
 
 	function expungePluginAPIHandler( $pPluginGuid, $pAPIGuid, $pAPIType ){
 		$ret = FALSE;
-		$query = "DELETE FROM `".BIT_DB_PREFIX."package_plugins_api_maps` WHERE `plugin_guid` = ? AND `api_hook` = ? AND `api_type` = ?";
+		$query = "DELETE FROM `".BIT_DB_PREFIX."package_plugins_api_map` WHERE `plugin_guid` = ? AND `api_hook` = ? AND `api_type` = ?";
 		if( $this->mDb->query( $query, array( $pPluginGuid, $pAPIGuid, $pAPIType ) ) ){
 			$ret = TRUE;
 		}
