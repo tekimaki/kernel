@@ -638,6 +638,14 @@ class BitDbAdodb extends BitDb {
 	function Affected_Rows() {
 		return $this->mDb->Affected_Rows();
 	}
+
+	/**
+	 * pass through to close the connection
+	 */
+	function Close(){
+		return $this->mDb->Close();
+	}
+
 }
 
 /*
